@@ -5,13 +5,29 @@ import { ROUTE_ROLE_RULES } from "@/lib/helpers/constants";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, isSupabaseConfigured } from "@/lib/supabase/env";
 import type { Role } from "@/types/domain";
 
+function matchesPrefix(pathname: string, prefix: string) {
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
+
 function getRequiredRoles(pathname: string): Role[] | null {
-  const found = ROUTE_ROLE_RULES.find((rule) => pathname.startsWith(rule.prefix));
+  const found = ROUTE_ROLE_RULES.find((rule) => matchesPrefix(pathname, rule.prefix));
   return found?.roles ?? null;
 }
 
+function redirectToLogin(request: NextRequest) {
+  const redirectUrl = request.nextUrl.clone();
+  redirectUrl.pathname = "/staff/login";
+  redirectUrl.searchParams.set("next", request.nextUrl.pathname);
+  return NextResponse.redirect(redirectUrl);
+}
+
 export async function updateSession(request: NextRequest) {
+  const requiredRoles = getRequiredRoles(request.nextUrl.pathname);
+
   if (!isSupabaseConfigured) {
+    if (requiredRoles) {
+      return redirectToLogin(request);
+    }
     return NextResponse.next({ request });
   }
 
@@ -34,16 +50,12 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const requiredRoles = getRequiredRoles(request.nextUrl.pathname);
   if (!requiredRoles) {
     return response;
   }
 
   if (!user) {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/staff/login";
-    redirectUrl.searchParams.set("next", request.nextUrl.pathname);
-    return NextResponse.redirect(redirectUrl);
+    return redirectToLogin(request);
   }
 
   const { data: profile, error } = await supabase
@@ -53,10 +65,7 @@ export async function updateSession(request: NextRequest) {
     .maybeSingle();
 
   if (error || !profile || !requiredRoles.includes(profile.role as Role)) {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/staff/login";
-    redirectUrl.searchParams.set("next", request.nextUrl.pathname);
-    return NextResponse.redirect(redirectUrl);
+    return redirectToLogin(request);
   }
 
   return response;

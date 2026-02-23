@@ -8,6 +8,11 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const context = await requireStaffApiContext(["cuisine", "admin", "proprio"]);
+  if (context instanceof NextResponse) {
+    return context;
+  }
+
   const supabase = getServiceSupabase();
   if (!supabase) {
     return NextResponse.json({ error: "Supabase non configuré" }, { status: 500 });
@@ -21,6 +26,7 @@ export async function GET(
       "id, statut, heure, total, eta_minutes, table:tables(numero), order_items(id, quantite, note, prix_unitaire, supplement, item:items(nom), accompaniment:accompaniments(nom), pizza_size:pizza_sizes(taille))",
     )
     .eq("id", id)
+    .eq("restaurant_id", context.restaurantId)
     .maybeSingle();
 
   if (error || !data) {
