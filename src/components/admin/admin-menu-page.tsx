@@ -6,7 +6,7 @@ import { Button } from "@/components/common/button";
 import { Badge, Card, CardTitle } from "@/components/common/card";
 import { FieldLabel, Select, TextInput } from "@/components/common/field";
 import { PageShell } from "@/components/layout/page-shell";
-import { formatCurrency } from "@/lib/helpers/format";
+import { formatCurrency, normalizeAllergen } from "@/lib/helpers/format";
 import { getBrowserSupabase } from "@/lib/supabase/browser";
 import { DEFAULT_RESTAURANT_ID } from "@/lib/supabase/env";
 import { useI18n } from "@/providers/i18n-provider";
@@ -20,6 +20,26 @@ function slugify(value: string) {
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
+}
+
+function normalizeAllergenToken(value: string) {
+  return normalizeAllergen(value).replace(/\s+/g, " ").trim();
+}
+
+function parseAllergens(raw: string) {
+  const parsed: string[] = [];
+  const seen = new Set<string>();
+
+  raw.split(",").forEach((entry) => {
+    const token = normalizeAllergenToken(entry);
+    if (!token || seen.has(token)) {
+      return;
+    }
+    seen.add(token);
+    parsed.push(token);
+  });
+
+  return parsed;
 }
 
 export function AdminMenuPage() {
@@ -48,6 +68,8 @@ export function AdminMenuPage() {
   const [itemSubcategoryId, setItemSubcategoryId] = useState("");
   const [itemAllergens, setItemAllergens] = useState("");
   const [itemNeedsAccompaniment, setItemNeedsAccompaniment] = useState(false);
+  const [itemAllergenDrafts, setItemAllergenDrafts] = useState<Record<string, string>>({});
+  const [itemAllergenSaving, setItemAllergenSaving] = useState<Record<string, boolean>>({});
 
   const [pizzaItemId, setPizzaItemId] = useState("");
   const [pizzaLabel, setPizzaLabel] = useState("");
@@ -191,10 +213,7 @@ export function AdminMenuPage() {
       return;
     }
 
-    const allergens = itemAllergens
-      .split(",")
-      .map((entry) => entry.trim())
-      .filter(Boolean);
+    const allergens = parseAllergens(itemAllergens);
 
     const { error: createError } = await supabase.from("items").insert({
       nom: itemName.trim(),
@@ -262,6 +281,46 @@ export function AdminMenuPage() {
     }
     notifySuccess("Plat supprimé");
     void loadData();
+  }
+
+  async function saveItemAllergens(item: MenuItem, rawAllergens: string) {
+    const supabase = getBrowserSupabase();
+    if (!supabase) {
+      return;
+    }
+
+    const nextAllergens = parseAllergens(rawAllergens);
+    setItemAllergenSaving((current) => ({ ...current, [item.id]: true }));
+
+    const { error: updateError } = await supabase
+      .from("items")
+      .update({ allergenes: nextAllergens })
+      .eq("id", item.id)
+      .eq("restaurant_id", DEFAULT_RESTAURANT_ID);
+
+    setItemAllergenSaving((current) => {
+      const next = { ...current };
+      delete next[item.id];
+      return next;
+    });
+
+    if (updateError) {
+      setError(updateError.message);
+      notifyError("Allergènes non mis à jour", updateError.message);
+      return;
+    }
+
+    setError(null);
+    setItemAllergenDrafts((current) => ({ ...current, [item.id]: nextAllergens.join(", ") }));
+    notifySuccess("Allergènes mis à jour", `${item.nom} · ${nextAllergens.length} allergène(s)`);
+    void loadData();
+  }
+
+  async function removeAllergenFromItem(item: MenuItem, allergen: string) {
+    const remaining = item.allergenes.filter(
+      (entry) => normalizeAllergenToken(entry) !== normalizeAllergenToken(allergen),
+    );
+    await saveItemAllergens(item, remaining.join(", "));
   }
 
   async function createPizzaSize(event: FormEvent<HTMLFormElement>) {
@@ -506,7 +565,7 @@ export function AdminMenuPage() {
               {items.map((item) => (
                 <li key={item.id} className="rounded-xl border border-[var(--color-light-gray)] p-3">
                   <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <p className="font-semibold text-[var(--color-dark-green)]">{item.nom}</p>
                       <p className="text-xs text-[var(--color-black)]/65">
                         {formatCurrency(item.prix, locale)} · {categories.find((category) => category.id === item.categorie_id)?.nom}
@@ -516,6 +575,64 @@ export function AdminMenuPage() {
                           {item.disponible ? "Disponible" : "Épuisé"}
                         </Badge>
                         {item.plat_du_jour ? <Badge>{messages.admin.dishOfDay}</Badge> : null}
+                      </div>
+
+                      <div className="mt-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-dark-green)]/80">
+                          Allergènes
+                        </p>
+                        {item.allergenes.length === 0 ? (
+                          <p className="mt-2 text-xs text-[var(--color-black)]/65">Aucun allergène renseigné.</p>
+                        ) : (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {item.allergenes.map((allergen, index) => (
+                              <button
+                                key={`${item.id}-${allergen}-${index}`}
+                                type="button"
+                                className="inline-flex items-center gap-1 rounded-full border border-[var(--color-sage)] bg-[var(--color-cream)] px-2.5 py-1 text-xs font-semibold text-[var(--color-dark-green)]"
+                                onClick={() => void removeAllergenFromItem(item, allergen)}
+                                disabled={Boolean(itemAllergenSaving[item.id])}
+                                aria-label={`Supprimer l'allergène ${allergen}`}
+                              >
+                                {allergen}
+                                <span aria-hidden="true">×</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        <form
+                          className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center"
+                          onSubmit={(event) => {
+                            event.preventDefault();
+                            void saveItemAllergens(
+                              item,
+                              itemAllergenDrafts[item.id] ?? item.allergenes.join(", "),
+                            );
+                          }}
+                        >
+                          <TextInput
+                            value={itemAllergenDrafts[item.id] ?? item.allergenes.join(", ")}
+                            onChange={(event) =>
+                              setItemAllergenDrafts((current) => ({
+                                ...current,
+                                [item.id]: event.target.value,
+                              }))
+                            }
+                            placeholder="gluten, lait, oeufs"
+                          />
+                          <Button
+                            type="submit"
+                            variant="secondary"
+                            className="sm:shrink-0"
+                            disabled={Boolean(itemAllergenSaving[item.id])}
+                          >
+                            {itemAllergenSaving[item.id] ? messages.common.loading : "Enregistrer"}
+                          </Button>
+                        </form>
+                        <p className="mt-1 text-xs text-[var(--color-black)]/60">
+                          Sépare par virgule pour ajouter ou modifier. Clique un allergène pour le supprimer.
+                        </p>
                       </div>
                     </div>
 
