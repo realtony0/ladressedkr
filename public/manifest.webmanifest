@@ -1,0 +1,16 @@
+{
+  "name": "L'Adresse Dakar",
+  "short_name": "L'Adresse",
+  "description": "Plateforme de gestion restaurant pour L'Adresse Dakar",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5F2EC",
+  "theme_color": "#7A9E7E",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
