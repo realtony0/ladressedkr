@@ -624,7 +624,7 @@ function MenuBoard({ tableId }: { tableId: string }) {
                       : "0 active orders"}
                 </p>
                 {activeOrder ? (
-                  <Link href={`/commande/${activeOrder.id}?table=${tableId}`}>
+                  <Link href={`/${tableId}/commandes`}>
                     <Button className="w-full">{messages.client.orderTracking}</Button>
                   </Link>
                 ) : (

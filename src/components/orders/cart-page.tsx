@@ -72,7 +72,7 @@ export function CartPage({ tableId }: { tableId: string }) {
         locale === "fr" ? "Commande envoyée" : "Order placed",
         locale === "fr" ? `Suivi #${payload.orderId.slice(0, 8)}` : `Tracking #${payload.orderId.slice(0, 8)}`,
       );
-      router.push(`/commande/${payload.orderId}?table=${tableId}`);
+      router.push(`/${tableId}/commandes`);
     } catch (requestError) {
       const message =
         requestError instanceof Error

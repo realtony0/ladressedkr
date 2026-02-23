@@ -34,6 +34,8 @@ export const ROUTE_ROLE_RULES: Array<{ prefix: string; roles: Role[] }> = [
   { prefix: "/serveur", roles: ["cuisine", "admin", "proprio"] },
   { prefix: "/admin", roles: ["admin", "proprio"] },
   { prefix: "/proprio", roles: ["proprio"] },
+  { prefix: "/commande", roles: ["cuisine", "serveur", "admin", "proprio"] },
+  { prefix: "/appel-serveur", roles: ["cuisine", "serveur", "admin", "proprio"] },
 ];
 
 export const DEFAULT_DELAY_ALERT_MINUTES = 18;

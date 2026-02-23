@@ -203,12 +203,6 @@ export function ClientOrdersPage({ tableId }: { tableId: string }) {
                       </div>
                       <div className="shrink-0 text-right">
                         <p className="text-sm font-bold text-[var(--color-dark-green)]">{formatCurrency(order.total, locale)}</p>
-                        <Link
-                          href={`/commande/${order.id}?table=${tableId}`}
-                          className="text-xs font-semibold text-[var(--color-dark-green)] underline-offset-2 hover:underline"
-                        >
-                          {messages.client.openOrder}
-                        </Link>
                       </div>
                     </div>
                   </li>
@@ -237,12 +231,6 @@ export function ClientOrdersPage({ tableId }: { tableId: string }) {
                       </div>
                       <div className="shrink-0 text-right">
                         <p className="text-sm font-bold text-[var(--color-dark-green)]">{formatCurrency(order.total, locale)}</p>
-                        <Link
-                          href={`/commande/${order.id}?table=${tableId}`}
-                          className="text-xs font-semibold text-[var(--color-dark-green)] underline-offset-2 hover:underline"
-                        >
-                          {messages.client.openOrder}
-                        </Link>
                       </div>
                     </div>
                   </li>
