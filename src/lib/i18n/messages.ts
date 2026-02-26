@@ -112,8 +112,10 @@ export interface Messages {
     subtitle: string;
     email: string;
     password: string;
+    accessCode: string;
     signin: string;
     invalid: string;
+    invalidCode: string;
   };
 }
 
@@ -230,8 +232,10 @@ export const messages: Record<Locale, Messages> = {
       subtitle: "Accès réservé à la cuisine, à l'admin et au propriétaire.",
       email: "Email professionnel",
       password: "Mot de passe",
+      accessCode: "Code staff",
       signin: "Se connecter",
       invalid: "Identifiants invalides ou profil non autorisé.",
+      invalidCode: "Code staff invalide.",
     },
   },
   en: {
@@ -346,8 +350,10 @@ export const messages: Record<Locale, Messages> = {
       subtitle: "Restricted access for kitchen, admin and owner.",
       email: "Professional email",
       password: "Password",
+      accessCode: "Staff code",
       signin: "Sign in",
       invalid: "Invalid credentials or unauthorized profile.",
+      invalidCode: "Invalid staff code.",
     },
   },
 };

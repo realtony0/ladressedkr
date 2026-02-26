@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
+import { hasValidStaffAccessCookieFromStore } from "@/lib/helpers/staff-code";
 import { getServerSupabase } from "@/lib/supabase/server";
 import type { Role } from "@/types/domain";
 
@@ -12,6 +14,11 @@ export interface StaffApiContext {
 export async function requireStaffApiContext(
   allowedRoles: Role[],
 ): Promise<StaffApiContext | NextResponse> {
+  const cookieStore = await cookies();
+  if (!hasValidStaffAccessCookieFromStore(cookieStore)) {
+    return NextResponse.json({ error: "Code staff requis." }, { status: 401 });
+  }
+
   const authSupabase = await getServerSupabase();
   if (!authSupabase) {
     return NextResponse.json({ error: "Supabase non configuré." }, { status: 500 });

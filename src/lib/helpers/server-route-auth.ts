@@ -1,9 +1,16 @@
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 
+import { hasValidStaffAccessCookieFromStore } from "@/lib/helpers/staff-code";
 import { getServerSupabase } from "@/lib/supabase/server";
 import type { Role } from "@/types/domain";
 
 export async function requireRouteRoles(allowedRoles: Role[]) {
+  const cookieStore = await cookies();
+  if (!hasValidStaffAccessCookieFromStore(cookieStore)) {
+    redirect("/staff/login");
+  }
+
   const supabase = await getServerSupabase();
   if (!supabase) {
     redirect("/staff/login");

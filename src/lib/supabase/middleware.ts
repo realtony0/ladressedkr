@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { ROUTE_ROLE_RULES } from "@/lib/helpers/constants";
+import { STAFF_ACCESS_COOKIE, hasValidStaffAccessCookieValue } from "@/lib/helpers/staff-code";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, isSupabaseConfigured } from "@/lib/supabase/env";
 import type { Role } from "@/types/domain";
 
@@ -23,6 +24,9 @@ function redirectToLogin(request: NextRequest) {
 
 export async function updateSession(request: NextRequest) {
   const requiredRoles = getRequiredRoles(request.nextUrl.pathname);
+  const hasStaffCodeCookie = hasValidStaffAccessCookieValue(
+    request.cookies.get(STAFF_ACCESS_COOKIE)?.value,
+  );
 
   if (!isSupabaseConfigured) {
     if (requiredRoles) {
@@ -52,6 +56,10 @@ export async function updateSession(request: NextRequest) {
 
   if (!requiredRoles) {
     return response;
+  }
+
+  if (!hasStaffCodeCookie) {
+    return redirectToLogin(request);
   }
 
   if (!user) {

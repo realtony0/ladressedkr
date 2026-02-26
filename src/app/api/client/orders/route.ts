@@ -17,6 +17,18 @@ function parseHistoryIds(raw: string | null) {
     .slice(0, 50);
 }
 
+type HistoryOrderRaw = {
+  id: string;
+  statut: "received" | "preparing" | "ready";
+  heure: string;
+  total: number;
+  eta_minutes: number | null;
+  rating:
+    | { id?: string; note?: number | null; commentaire?: string | null }
+    | Array<{ id?: string; note?: number | null; commentaire?: string | null }>
+    | null;
+};
+
 export async function GET(request: Request) {
   const supabase = getServiceSupabase();
   if (!supabase) {
@@ -71,7 +83,7 @@ export async function GET(request: Request) {
   if (historyIds.length > 0) {
     const historyResult = await supabase
       .from("orders")
-      .select("id, statut, heure, total, eta_minutes")
+      .select("id, statut, heure, total, eta_minutes, rating:ratings(id, note, commentaire)")
       .eq("table_id", table.id)
       .in("id", historyIds)
       .order("heure", { ascending: false });
@@ -80,7 +92,20 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: historyResult.error.message }, { status: 500 });
     }
 
-    historyOrders = historyResult.data ?? [];
+    const rows = (historyResult.data ?? []) as unknown as HistoryOrderRaw[];
+    historyOrders = rows.map((order) => {
+      const ratingRelation = Array.isArray(order.rating) ? order.rating[0] : order.rating;
+      return {
+        id: order.id,
+        statut: order.statut,
+        heure: order.heure,
+        total: order.total,
+        eta_minutes: order.eta_minutes,
+        has_rating: Boolean(ratingRelation?.id),
+        rating_note: ratingRelation?.note ?? null,
+        rating_commentaire: ratingRelation?.commentaire ?? null,
+      };
+    });
   }
 
   return NextResponse.json(
@@ -99,4 +124,3 @@ export async function GET(request: Request) {
     },
   );
 }
-
