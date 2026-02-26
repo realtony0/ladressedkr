@@ -13,11 +13,13 @@ import { serverCallReasonLabel } from "@/lib/helpers/format";
 import { DEFAULT_RESTAURANT_ID } from "@/lib/supabase/env";
 import { useI18n } from "@/providers/i18n-provider";
 import { useNotifications } from "@/providers/notifications-provider";
+import { useTableAccess } from "@/providers/table-access-provider";
 import type { ServerCallReason } from "@/types/domain";
 
 export function ServerCallPage({ tableId }: { tableId: string }) {
   const { locale, messages } = useI18n();
   const { notifyError, notifySuccess } = useNotifications();
+  const { isReady: tableAccessReady, accessToken } = useTableAccess();
 
   const [reason, setReason] = useState<ServerCallReason>("addition");
   const [details, setDetails] = useState("");
@@ -26,6 +28,16 @@ export function ServerCallPage({ tableId }: { tableId: string }) {
   const [error, setError] = useState<string | null>(null);
 
   async function submitCall() {
+    if (!accessToken) {
+      const message =
+        locale === "fr"
+          ? "Session QR invalide. Rescanne le QR de ta table."
+          : "Invalid QR session. Please rescan your table QR.";
+      setError(message);
+      notifyError(locale === "fr" ? "QR requis" : "QR required", message);
+      return;
+    }
+
     setSending(true);
     setError(null);
 
@@ -37,6 +49,7 @@ export function ServerCallPage({ tableId }: { tableId: string }) {
         },
         body: JSON.stringify({
           tableNumber: Number(tableId),
+          accessToken,
           restaurantId: DEFAULT_RESTAURANT_ID || undefined,
           motif: reason,
           details,
@@ -111,8 +124,15 @@ export function ServerCallPage({ tableId }: { tableId: string }) {
             ) : null}
 
             {error ? <p className="rounded-xl bg-[#ffe4e4] p-3 text-sm text-[#8b2424]">{error}</p> : null}
+            {tableAccessReady && !accessToken ? (
+              <p className="rounded-xl bg-[#fff7da] p-3 text-sm text-[#6b5608]">
+                {locale === "fr"
+                  ? "QR requis pour envoyer l'appel. Rescanne le QR de ta table."
+                  : "A valid QR is required to send a call. Please rescan your table QR."}
+              </p>
+            ) : null}
 
-            <Button className="w-full" onClick={submitCall} disabled={sending}>
+            <Button className="w-full" onClick={submitCall} disabled={sending || !tableAccessReady || !accessToken}>
               {sending ? messages.common.loading : messages.common.confirm}
             </Button>
 

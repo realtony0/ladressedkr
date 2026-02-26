@@ -30,6 +30,7 @@ export interface Table {
   id: string;
   numero: number;
   qr_code: string;
+  access_token?: string;
   statut: "active" | "inactive";
   restaurant_id: string;
 }

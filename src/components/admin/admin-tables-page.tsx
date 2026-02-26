@@ -8,6 +8,11 @@ import { Button } from "@/components/common/button";
 import { Card, CardTitle } from "@/components/common/card";
 import { FieldLabel, TextInput } from "@/components/common/field";
 import { PageShell } from "@/components/layout/page-shell";
+import {
+  buildTableQrUrl,
+  createTableAccessToken,
+  extractTableAccessTokenFromQrCode,
+} from "@/lib/helpers/table-access";
 import { getBrowserSupabase } from "@/lib/supabase/browser";
 import { APP_URL, DEFAULT_RESTAURANT_ID } from "@/lib/supabase/env";
 import { useI18n } from "@/providers/i18n-provider";
@@ -48,7 +53,16 @@ export function AdminTablesPage() {
   }, []);
 
   const tableQrUrl = useCallback(
-    (numero: number) => `${currentBaseUrl()}/${numero}`,
+    (numero: number, accessToken?: string) => {
+      if (!accessToken) {
+        return `${currentBaseUrl()}/${numero}`;
+      }
+      return buildTableQrUrl({
+        baseUrl: currentBaseUrl(),
+        tableNumber: numero,
+        accessToken,
+      });
+    },
     [currentBaseUrl],
   );
 
@@ -56,7 +70,8 @@ export function AdminTablesPage() {
     async (rows: Table[]) =>
       Promise.all(
       rows.map(async (table) => {
-        const url = table.qr_code || tableQrUrl(table.numero);
+        const accessToken = table.access_token ?? extractTableAccessTokenFromQrCode(table.qr_code) ?? undefined;
+        const url = table.qr_code || tableQrUrl(table.numero, accessToken);
         const qr_data_url = await QRCode.toDataURL(url, {
           margin: 1,
           width: 220,
@@ -135,12 +150,17 @@ export function AdminTablesPage() {
     setSuccess(null);
     setSubmitting(true);
 
-    const qr = tableQrUrl(numero);
+    const existingTable = tables.find((entry) => entry.numero === numero);
+    const accessToken = existingTable?.access_token ?? createTableAccessToken();
+    const qr = tableQrUrl(numero, accessToken);
 
-    const { error: upsertError } = await supabase.from("tables").upsert(
+    let upsertError: { message: string } | null = null;
+
+    const upsertWithToken = await supabase.from("tables").upsert(
       {
         numero,
         qr_code: qr,
+        access_token: accessToken,
         statut: "active",
         restaurant_id: DEFAULT_RESTAURANT_ID,
       },
@@ -148,6 +168,23 @@ export function AdminTablesPage() {
         onConflict: "restaurant_id,numero",
       },
     );
+
+    upsertError = upsertWithToken.error;
+
+    if (upsertError?.message?.toLowerCase().includes("access_token")) {
+      const fallbackUpsert = await supabase.from("tables").upsert(
+        {
+          numero,
+          qr_code: qr,
+          statut: "active",
+          restaurant_id: DEFAULT_RESTAURANT_ID,
+        },
+        {
+          onConflict: "restaurant_id,numero",
+        },
+      );
+      upsertError = fallbackUpsert.error;
+    }
 
     if (upsertError) {
       setError(upsertError.message);
@@ -172,14 +209,31 @@ export function AdminTablesPage() {
     setError(null);
     setSuccess(null);
 
-    const freshQr = tableQrUrl(table.numero);
-    const { error: updateError } = await supabase
+    const freshAccessToken = createTableAccessToken();
+    const freshQr = tableQrUrl(table.numero, freshAccessToken);
+    let updateError: { message: string } | null = null;
+
+    const updateWithToken = await supabase
       .from("tables")
       .update({
         qr_code: freshQr,
+        access_token: freshAccessToken,
       })
       .eq("id", table.id)
       .eq("restaurant_id", DEFAULT_RESTAURANT_ID);
+
+    updateError = updateWithToken.error;
+
+    if (updateError?.message?.toLowerCase().includes("access_token")) {
+      const fallbackUpdate = await supabase
+        .from("tables")
+        .update({
+          qr_code: freshQr,
+        })
+        .eq("id", table.id)
+        .eq("restaurant_id", DEFAULT_RESTAURANT_ID);
+      updateError = fallbackUpdate.error;
+    }
 
     if (updateError) {
       setError(updateError.message);
@@ -233,7 +287,8 @@ export function AdminTablesPage() {
       return;
     }
 
-    const targetUrl = table.qr_code || tableQrUrl(table.numero);
+    const accessToken = table.access_token ?? extractTableAccessTokenFromQrCode(table.qr_code) ?? undefined;
+    const targetUrl = table.qr_code || tableQrUrl(table.numero, accessToken);
 
     popup.document.write(`
       <html>
@@ -295,7 +350,13 @@ export function AdminTablesPage() {
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                       <p className="font-semibold text-[var(--color-dark-green)]">Table {table.numero}</p>
-                      <p className="text-xs text-[var(--color-black)]/65">{table.qr_code || tableQrUrl(table.numero)}</p>
+                      <p className="text-xs text-[var(--color-black)]/65">
+                        {table.qr_code ||
+                          tableQrUrl(
+                            table.numero,
+                            table.access_token ?? extractTableAccessTokenFromQrCode(table.qr_code) ?? undefined,
+                          )}
+                      </p>
                       <p
                         className={`mt-1 text-xs font-semibold ${
                           table.statut === "active" ? "text-[#225222]" : "text-[#8b2424]"

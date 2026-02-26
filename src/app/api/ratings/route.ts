@@ -1,11 +1,17 @@
 import { NextResponse } from "next/server";
 
+import { resolveActiveTableByAccessToken } from "@/lib/data/tables";
+import { requireStaffApiContext } from "@/lib/helpers/api-auth";
+import { DEFAULT_RESTAURANT_ID } from "@/lib/supabase/env";
 import { getServiceSupabase } from "@/lib/supabase/server";
 
 interface CreateRatingBody {
   orderId: string;
   note: number;
   commentaire?: string;
+  tableNumber?: number;
+  accessToken?: string;
+  restaurantId?: string;
 }
 
 export async function POST(request: Request) {
@@ -20,7 +26,46 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Données de notation invalides" }, { status: 400 });
   }
 
-  const { data: order } = await supabase.from("orders").select("id, statut").eq("id", body.orderId).maybeSingle();
+  let tableIdFilter: string | null = null;
+  let restaurantIdFilter: string | null = null;
+
+  const hasClientAccessToken = body.accessToken?.trim() && Number.isFinite(body.tableNumber) && (body.tableNumber ?? 0) > 0;
+  if (hasClientAccessToken) {
+    const resolvedRestaurantId = body.restaurantId?.trim() || DEFAULT_RESTAURANT_ID || null;
+    const tableResolution = await resolveActiveTableByAccessToken<{ id: string }>({
+      supabase,
+      tableNumber: Number(body.tableNumber),
+      accessToken: body.accessToken as string,
+      restaurantId: resolvedRestaurantId,
+      select: "id",
+    });
+
+    if (tableResolution.error) {
+      return NextResponse.json({ error: tableResolution.error }, { status: 500 });
+    }
+
+    if (!tableResolution.table) {
+      return NextResponse.json({ error: "Session QR invalide ou expirée." }, { status: 403 });
+    }
+
+    tableIdFilter = tableResolution.table.id;
+  } else {
+    const context = await requireStaffApiContext(["cuisine", "serveur", "admin", "proprio"]);
+    if (context instanceof NextResponse) {
+      return context;
+    }
+    restaurantIdFilter = context.restaurantId;
+  }
+
+  let orderQuery = supabase.from("orders").select("id, statut, table_id, restaurant_id").eq("id", body.orderId);
+  if (tableIdFilter) {
+    orderQuery = orderQuery.eq("table_id", tableIdFilter);
+  }
+  if (restaurantIdFilter) {
+    orderQuery = orderQuery.eq("restaurant_id", restaurantIdFilter);
+  }
+
+  const { data: order } = await orderQuery.maybeSingle();
 
   if (!order) {
     return NextResponse.json({ error: "Commande introuvable" }, { status: 404 });

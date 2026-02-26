@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { ACCOMPANIMENT_REQUIRED_SLUGS } from "@/lib/helpers/constants";
 import { applyPromotion } from "@/lib/data/menu";
-import { resolveActiveTableByNumber } from "@/lib/data/tables";
+import { resolveActiveTableByAccessToken } from "@/lib/data/tables";
 import { DEFAULT_RESTAURANT_ID } from "@/lib/supabase/env";
 import { getServiceSupabase } from "@/lib/supabase/server";
 
@@ -16,6 +16,7 @@ interface OrderLineInput {
 
 interface CreateOrderBody {
   tableNumber: number;
+  accessToken: string;
   lines: OrderLineInput[];
   restaurantId?: string;
 }
@@ -35,12 +36,18 @@ export async function POST(request: Request) {
 
   const body = (await request.json()) as CreateOrderBody;
 
-  if (!Number.isFinite(body.tableNumber) || body.tableNumber <= 0 || !Array.isArray(body.lines) || body.lines.length === 0) {
+  if (
+    !Number.isFinite(body.tableNumber) ||
+    body.tableNumber <= 0 ||
+    !body.accessToken?.trim() ||
+    !Array.isArray(body.lines) ||
+    body.lines.length === 0
+  ) {
     return NextResponse.json({ error: "Payload commande invalide." }, { status: 400 });
   }
 
   const resolvedRestaurantId = body.restaurantId?.trim() || DEFAULT_RESTAURANT_ID || null;
-  const tableResolution = await resolveActiveTableByNumber<{
+  const tableResolution = await resolveActiveTableByAccessToken<{
     id: string;
     numero: number;
     statut: "active" | "inactive";
@@ -48,6 +55,7 @@ export async function POST(request: Request) {
   }>({
     supabase,
     tableNumber: body.tableNumber,
+    accessToken: body.accessToken,
     restaurantId: resolvedRestaurantId,
     select: "id, numero, statut, restaurant_id",
   });

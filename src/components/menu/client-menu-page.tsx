@@ -23,6 +23,7 @@ import { getBrowserSupabase } from "@/lib/supabase/browser";
 import { useCart } from "@/providers/cart-provider";
 import { useI18n } from "@/providers/i18n-provider";
 import { useNotifications } from "@/providers/notifications-provider";
+import { useTableAccess } from "@/providers/table-access-provider";
 import type { Category, MenuItem, Table } from "@/types/domain";
 
 const NETWORK_TIMEOUT_MS = 7000;
@@ -59,6 +60,7 @@ function MenuBoard({ tableId }: { tableId: string }) {
   const { messages, locale } = useI18n();
   const { lines, subtotal, addLine } = useCart();
   const { notifySuccess } = useNotifications();
+  const { isReady: tableAccessReady, accessToken } = useTableAccess();
   const [catalog, setCatalog] = useState<MenuCatalog | null>(null);
   const [table, setTable] = useState<Table | null>(null);
   const [tableNotFound, setTableNotFound] = useState(false);
@@ -241,32 +243,49 @@ function MenuBoard({ tableId }: { tableId: string }) {
     let cancelled = false;
 
     async function loadActiveOrders() {
-      if (!table?.id) {
+      if (!table?.id || !tableAccessReady) {
         setActiveOrder(null);
         setActiveOrderCount(0);
         setLoadingActiveOrder(false);
         return;
       }
 
-      const supabase = getBrowserSupabase();
-      if (!supabase) {
+      if (!accessToken) {
+        setActiveOrder(null);
+        setActiveOrderCount(0);
+        setLoadingActiveOrder(false);
         return;
       }
 
       setLoadingActiveOrder(true);
-      const { data } = await supabase
-        .from("orders")
-        .select("id, statut, heure, eta_minutes, total")
-        .eq("table_id", table.id)
-        .in("statut", ["received", "preparing"])
-        .order("heure", { ascending: false })
-        .limit(25);
+      const params = new URLSearchParams({
+        tableNumber: tableId,
+        accessToken,
+      });
+      if (DEFAULT_RESTAURANT_ID) {
+        params.set("restaurantId", DEFAULT_RESTAURANT_ID);
+      }
+
+      const response = await fetch(`/api/client/orders?${params.toString()}`, {
+        cache: "no-store",
+      });
+
+      const payload = (await response.json()) as {
+        activeOrders?: ClientOrderPreview[];
+      };
 
       if (cancelled) {
         return;
       }
 
-      const activeOrders = (data as ClientOrderPreview[] | null) ?? [];
+      if (!response.ok) {
+        setActiveOrder(null);
+        setActiveOrderCount(0);
+        setLoadingActiveOrder(false);
+        return;
+      }
+
+      const activeOrders = payload.activeOrders ?? [];
       setActiveOrderCount(activeOrders.length);
       setActiveOrder(activeOrders[0] ?? null);
       setLoadingActiveOrder(false);
@@ -277,29 +296,20 @@ function MenuBoard({ tableId }: { tableId: string }) {
     return () => {
       cancelled = true;
     };
-  }, [ordersTick, refreshTick, table?.id]);
+  }, [accessToken, ordersTick, refreshTick, table?.id, tableAccessReady, tableId]);
 
   useEffect(() => {
-    if (!table?.id) {
+    if (!accessToken) {
       return;
     }
-
-    const supabase = getBrowserSupabase();
-    if (!supabase) {
-      return;
-    }
-
-    const channel = supabase
-      .channel(`client-menu-orders-${table.id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `table_id=eq.${table.id}` }, () =>
-        setOrdersTick((value) => value + 1),
-      )
-      .subscribe();
+    const interval = window.setInterval(() => {
+      setOrdersTick((value) => value + 1);
+    }, 6000);
 
     return () => {
-      void supabase.removeChannel(channel);
+      window.clearInterval(interval);
     };
-  }, [table?.id]);
+  }, [accessToken]);
 
   const allergenOptions = useMemo(() => {
     if (!catalog) {
@@ -579,6 +589,12 @@ function MenuBoard({ tableId }: { tableId: string }) {
                 </p>
                 {loadingActiveOrder ? (
                   <p className="mt-1 text-sm text-[var(--color-black)]/65">{messages.common.loading}</p>
+                ) : !accessToken ? (
+                  <p className="mt-1 text-sm text-[var(--color-black)]/65">
+                    {locale === "fr"
+                      ? "Session QR invalide. Rescanne le QR pour suivre ta commande."
+                      : "Invalid QR session. Rescan your QR to track your order."}
+                  </p>
                 ) : activeOrder ? (
                   <>
                     <p className="mt-1 text-base font-bold text-[var(--color-dark-green)]">

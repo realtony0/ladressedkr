@@ -14,12 +14,14 @@ import { DEFAULT_RESTAURANT_ID } from "@/lib/supabase/env";
 import { useCart } from "@/providers/cart-provider";
 import { useI18n } from "@/providers/i18n-provider";
 import { useNotifications } from "@/providers/notifications-provider";
+import { useTableAccess } from "@/providers/table-access-provider";
 
 export function CartPage({ tableId }: { tableId: string }) {
   const router = useRouter();
   const { locale, messages } = useI18n();
   const { notifyError, notifySuccess } = useNotifications();
   const { isReady, lines, subtotal, updateQuantity, removeLine, clearCart } = useCart();
+  const { isReady: tableAccessReady, accessToken } = useTableAccess();
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +36,16 @@ export function CartPage({ tableId }: { tableId: string }) {
   );
 
   async function placeOrder() {
+    if (!accessToken) {
+      const message =
+        locale === "fr"
+          ? "Session QR invalide. Rescanne le QR de ta table."
+          : "Invalid QR session. Please rescan your table QR.";
+      setError(message);
+      notifyError(locale === "fr" ? "QR requis" : "QR required", message);
+      return;
+    }
+
     setError(null);
     setSubmitting(true);
 
@@ -45,6 +57,7 @@ export function CartPage({ tableId }: { tableId: string }) {
         },
         body: JSON.stringify({
           tableNumber: Number(tableId),
+          accessToken,
           restaurantId: DEFAULT_RESTAURANT_ID || undefined,
           lines: lines.map((line) => ({
             itemId: line.item.id,
@@ -151,12 +164,19 @@ export function CartPage({ tableId }: { tableId: string }) {
             <CardTitle className="font-heading text-3xl">{messages.common.total}</CardTitle>
             <p className="mt-3 text-2xl font-extrabold text-[var(--color-dark-green)]">{formatCurrency(total, locale)}</p>
             {error ? <p className="mt-2 rounded-xl bg-[#ffe4e4] p-2 text-sm text-[#8b2424]">{error}</p> : null}
+            {tableAccessReady && !accessToken ? (
+              <p className="mt-2 rounded-xl bg-[#fff7da] p-2 text-sm text-[#6b5608]">
+                {locale === "fr"
+                  ? "QR requis pour valider la commande. Rescanne le QR de ta table."
+                  : "A valid QR is required to place the order. Please rescan your table QR."}
+              </p>
+            ) : null}
 
             <Button
               type="button"
               className="mt-4 w-full"
               onClick={placeOrder}
-              disabled={!isReady || submitting || lines.length === 0}
+              disabled={!isReady || !tableAccessReady || !accessToken || submitting || lines.length === 0}
             >
               {submitting ? messages.common.loading : messages.client.orderNow}
             </Button>

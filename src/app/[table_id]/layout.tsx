@@ -1,4 +1,5 @@
 import { CartProvider } from "@/providers/cart-provider";
+import { TableAccessProvider } from "@/providers/table-access-provider";
 
 export default async function TableLayout({
   children,
@@ -9,5 +10,9 @@ export default async function TableLayout({
 }>) {
   const { table_id } = await params;
 
-  return <CartProvider tableNumber={table_id}>{children}</CartProvider>;
+  return (
+    <TableAccessProvider tableNumber={table_id}>
+      <CartProvider tableNumber={table_id}>{children}</CartProvider>
+    </TableAccessProvider>
+  );
 }

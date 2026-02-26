@@ -45,6 +45,7 @@ export const LOCAL_STORAGE_KEYS = {
   locale: "ladresse.locale",
   cart: (tableNumber: string) => `ladresse.cart.${tableNumber}`,
   orderHistory: (tableNumber: string) => `ladresse.orders.${tableNumber}`,
+  tableAccess: (tableNumber: string) => `ladresse.table-access.${tableNumber}`,
 };
 
 export const DEFAULT_BRUNCH_WINDOW = {
