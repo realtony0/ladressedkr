@@ -17,6 +17,7 @@ import {
   type MenuCatalog,
 } from "@/lib/data/menu";
 import { resolveActiveTableByNumber } from "@/lib/data/tables";
+import { BRAND } from "@/lib/helpers/constants";
 import { formatCurrency, normalizeAllergen, orderStatusLabel } from "@/lib/helpers/format";
 import { DEFAULT_RESTAURANT_ID } from "@/lib/supabase/env";
 import { getBrowserSupabase } from "@/lib/supabase/browser";
@@ -483,6 +484,26 @@ function MenuBoard({ tableId }: { tableId: string }) {
       <ClientFlowNav tableId={tableId} />
       {loadError ? <Card className="mb-4 border-[#9C3D3D] bg-[#fff5f5] text-sm text-[#8b2424]">{loadError}</Card> : null}
 
+      {/* Hero "À la une" banner — Le Mint style */}
+      <div className="relative mb-6 overflow-hidden rounded-3xl bg-[var(--color-dark-green)] p-6 text-white shadow-float md:p-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(158,199,180,0.35),transparent_55%),radial-gradient(circle_at_bottom_left,rgba(201,168,76,0.25),transparent_45%)]" />
+        <div className="relative">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wide backdrop-blur">
+            <Sparkles className="h-3.5 w-3.5" />
+            {locale === "fr" ? "À la une" : "Featured"}
+          </span>
+          <h2 className="font-title mt-4 text-4xl md:text-5xl">{BRAND.name}</h2>
+          <p className="mt-2 max-w-md text-sm text-white/80 md:text-base">
+            {locale === "fr"
+              ? "Plus qu'une table, une expérience. Commandez directement depuis votre place."
+              : "More than a table, an experience. Order right from your seat."}
+          </p>
+          <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold backdrop-blur">
+            {messages.common.table} {table.numero} · {visibleCountLabel}
+          </div>
+        </div>
+      </div>
+
       <div className="grid gap-6 pb-28 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:pb-0">
         <div className="min-w-0 space-y-5">
           <Card>
@@ -705,7 +726,7 @@ function MenuBoard({ tableId }: { tableId: string }) {
                   </h2>
                   <Badge className="shrink-0">{section.items.length}</Badge>
                 </div>
-                <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   {section.items.map((item) => (
                     <MenuItemCard
                       key={item.id}
