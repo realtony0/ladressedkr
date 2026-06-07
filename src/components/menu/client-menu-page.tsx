@@ -12,6 +12,7 @@ import { MenuItemCard } from "@/components/menu/menu-item-card";
 import { ClientFlowNav } from "@/components/orders/client-flow-nav";
 import {
   activePromotionForItem,
+  getFallbackCatalog,
   isBrunchCurrentlyOpen,
   loadCatalog,
   type MenuCatalog,
@@ -93,13 +94,22 @@ function MenuBoard({ tableId }: { tableId: string }) {
         const supabase = getBrowserSupabase();
         const tableNumber = Number(tableId);
         if (!supabase) {
+          // Dev / demo preview: no Supabase configured (only happens locally —
+          // production always has it). Show the seed catalog with its photos
+          // instead of an error so the menu can be previewed offline.
           if (!cancelled) {
+            const previewNumber = Number.isFinite(tableNumber) && tableNumber > 0 ? tableNumber : 1;
             setMenuSource("offline");
-            setLoadError(
-              locale === "fr"
-                ? "Configuration serveur indisponible. Contacte la cuisine."
-                : "Server configuration unavailable. Please ask the kitchen team.",
-            );
+            setLoadError(null);
+            setTableNotFound(false);
+            setTable({
+              id: "offline-preview",
+              numero: previewNumber,
+              qr_code: "",
+              statut: "active",
+              restaurant_id: DEFAULT_RESTAURANT_ID,
+            });
+            setCatalog(getFallbackCatalog(DEFAULT_RESTAURANT_ID));
           }
           return;
         }
