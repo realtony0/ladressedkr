@@ -1,0 +1,48 @@
+-- Mise à jour des photos des plats — L'Adresse Dakar
+-- À coller dans Supabase > SQL Editor > Run
+BEGIN;
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Salade César';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Salade Douceur de Chèvre';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1551248429-40975aa4de74?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Salade Rivera';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Salade Nordic Green';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1656106577512-0259bf5b9fd6?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Tartare de Saumon';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1666190091090-1d312a4b04c2?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Pastels maison';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Avocado Bowl';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Samosas Dorés au Bœuf';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1610970878459-a0e464d7592b?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Burger Chicken Avocado';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Burger Steak Cheddar';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Burger Classique';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1612966893103-790e549a2ab1?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Tagliatelle Carbonara';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1556761223-4c4282c73f77?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Penne Poulet Champignons';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1551892374-ecf8754cf8b0?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Penne Saumon Crémeux';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1574894709920-11b28e7367e3?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Lasagnes Maison';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1508615263227-c5d58c1e5821?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Entrecôte du Grill';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1633436375795-12b3b339712f?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Faux-Filet de Bœuf Grillé';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Filet Mignon de Bœuf';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1594041680534-e8c8cdebd659?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Bœuf Effiloché Confit';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1652545296821-09a023a9fd08?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Cordon Bleu Maison';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1585325701956-60dd9c8553bc?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Escalope Gratinée';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1600699899970-b1c9fadd8f9e?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Poisson Braisé du Jour';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Pavé de Saumon Grillé';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1560717845-968823efbee1?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Saumon Teriyaki';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Pizza Margherita';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Pizza Beef Lover';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Pizza Golden BBQ';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Pizza La Capri';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Pizza Végétarienne';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Pizza Dibi – Signature';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Pizza Chèvre Miel';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1594007654729-407eedc4be65?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Pizza Amalfi';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1571997478779-2adcbbe9ab2f?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Pizza Bella Mare';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1571066811602-716837d681de?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Pizza Norvégienne';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1654074517750-f854f7c27d62?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Virgin Mojito Classique';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1595977514600-72cbc8376c38?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Virgin Mojito Passion';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1634496064950-02f043806b09?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Virgin Mojito Fraise';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Virgin Spritz Chic';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1499638673689-79a0b5115d87?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Passion Fizz';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1654074518423-750767f571a9?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Ginger Lemon';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1610515660473-c11d4f3f7d37?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Virgin Piña Colada';
+UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1661942477265-c6e3fbebb714?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Red Velvet';
+COMMIT;
+-- Vérification :
+-- SELECT nom, photo FROM public.items ORDER BY nom;

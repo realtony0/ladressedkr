@@ -700,6 +700,7 @@ LEFT JOIN sub ON sub.nom = v.sub_name
 ON CONFLICT (restaurant_id, nom) DO UPDATE SET
   description = EXCLUDED.description,
   prix = EXCLUDED.prix,
+  photo = EXCLUDED.photo,
   categorie_id = EXCLUDED.categorie_id,
   subcategorie_id = EXCLUDED.subcategorie_id,
   disponible = EXCLUDED.disponible,
