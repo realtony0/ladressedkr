@@ -7,7 +7,7 @@ export function Card({
 }: React.ComponentPropsWithoutRef<"section">) {
   return (
     <section
-      className={cn("rounded-2xl border border-[var(--color-light-gray)] bg-white p-4 shadow-sm", className)}
+      className={cn("rounded-2xl border border-[var(--color-light-gray)] bg-white p-4 shadow-card", className)}
       {...props}
     >
       {children}

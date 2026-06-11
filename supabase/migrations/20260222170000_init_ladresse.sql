@@ -549,24 +549,24 @@ VALUES
   ('Volailles', 'volailles', 'Drumstick', 5, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'),
   ('Poissons', 'poissons', 'Fish', 6, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'),
   ('Pizzas', 'pizzas', 'Pizza', 7, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'),
-  ('Cocktails sans alcool', 'cocktails-sans-alcool', 'GlassWater', 8, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'),
-  ('Brunch', 'brunch', 'Sun', 9, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55')
+  ('Cocktails sans alcool', 'cocktails-sans-alcool', 'GlassWater', 8, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55')
 ON CONFLICT (restaurant_id, slug) DO UPDATE SET
   nom = EXCLUDED.nom,
   icone = EXCLUDED.icone,
   ordre = EXCLUDED.ordre;
 
--- Seed subcategories
+-- Seed subcategories (pizza bases + cocktail families)
 INSERT INTO public.subcategories (nom, ordre, categorie_id, restaurant_id)
-SELECT 'Formules', 1, c.id, c.restaurant_id
-FROM public.categories c
-WHERE c.slug = 'brunch' AND c.restaurant_id = '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'
-ON CONFLICT DO NOTHING;
-
-INSERT INTO public.subcategories (nom, ordre, categorie_id, restaurant_id)
-SELECT 'À la carte', 2, c.id, c.restaurant_id
-FROM public.categories c
-WHERE c.slug = 'brunch' AND c.restaurant_id = '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'
+SELECT v.nom, v.ordre, c.id, c.restaurant_id
+FROM (
+  VALUES
+    ('Base tomate', 1, 'pizzas'),
+    ('Base crème fraîche', 2, 'pizzas'),
+    ('Virgins', 1, 'cocktails-sans-alcool'),
+    ('Cocktails', 2, 'cocktails-sans-alcool')
+) AS v(nom, ordre, cat_slug)
+JOIN public.categories c
+  ON c.slug = v.cat_slug AND c.restaurant_id = '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'
 ON CONFLICT DO NOTHING;
 
 -- Seed accompaniments
@@ -633,46 +633,67 @@ SELECT
   v.plat_du_jour
 FROM (
   VALUES
-    ('Burrata de Casamance, tomates confites et basilic', 'Burrata crémeuse, tomates rôties, huile d''olive vierge et basilic frais.', 7800, NULL, 'entrees-salades', NULL, true, ARRAY['lait'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Salade de crevettes grillées, mangue verte et avocat', 'Crevettes marinées, avocat, mangue verte, jeunes pousses et vinaigrette agrumes.', 9200, NULL, 'entrees-salades', NULL, true, ARRAY['crustaces','moutarde'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Tartare de thon rouge à la dakaroise', 'Thon rouge assaisonné, citron vert, piment doux, coriandre et croustillant de manioc.', 9800, NULL, 'entrees-salades', NULL, true, ARRAY['poissons'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Velouté de patate douce au gingembre frais', 'Soupe onctueuse de patate douce, gingembre et lait de coco.', 6500, NULL, 'entrees-salades', NULL, true, ARRAY['lait'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    -- Entrées & Salades
+    ('Salade César', 'Poulet crispy, copeaux de parmesan, croûtons dorés, sauce césar maison.', 7000, 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?auto=format&fit=crop&w=800&q=70', 'entrees-salades', NULL, true, ARRAY['gluten','lait','oeufs','poissons'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Salade Douceur de Chèvre', 'Fromage de chèvre chaud légèrement gratiné, miel et noix torréfiées.', 7000, 'https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?auto=format&fit=crop&w=800&q=70', 'entrees-salades', NULL, true, ARRAY['lait','fruits-a-coque'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Salade Rivera', 'Avocat frais, crevettes marinées au citron et aux herbes fraîches.', 7500, 'https://images.unsplash.com/photo-1551248429-40975aa4de74?auto=format&fit=crop&w=800&q=70', 'entrees-salades', NULL, true, ARRAY['crustaces'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Salade Nordic Green', 'Saumon grillé, avocat, vinaigrette légère au citron.', 8000, 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=70', 'entrees-salades', NULL, true, ARRAY['poissons'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Tartare de Saumon', 'Saumon cru citronné finement taillé, touche d''huile d''olive.', 7000, 'https://images.unsplash.com/photo-1656106577512-0259bf5b9fd6?auto=format&fit=crop&w=800&q=70', 'entrees-salades', NULL, true, ARRAY['poissons'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Pastels maison', 'Pastels maison farcis à la viande, sauce relevée.', 4500, 'https://images.unsplash.com/photo-1666190091090-1d312a4b04c2?auto=format&fit=crop&w=800&q=70', 'entrees-salades', NULL, true, ARRAY['gluten'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Avocado Bowl', 'Avocat en tranches, crevettes sautées, vinaigrette citronnée et herbes fraîches.', 7500, 'https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?auto=format&fit=crop&w=800&q=70', 'entrees-salades', NULL, true, ARRAY['crustaces'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Samosas Dorés au Bœuf', 'Samosas maison farcis au bœuf et épices douces.', 5000, 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=800&q=70', 'entrees-salades', NULL, true, ARRAY['gluten'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
 
-    ('Dakar Smash Burger', 'Bœuf smashé, cheddar affiné, oignons caramélisés, sauce maison, servi avec frites maison.', 9500, NULL, 'burgers', NULL, true, ARRAY['gluten','lait','oeufs','moutarde'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Burger poulet yassa croustillant', 'Filet de poulet pané, compotée d''oignons yassa, salade croquante, servi avec frites maison.', 9000, NULL, 'burgers', NULL, true, ARRAY['gluten','oeufs','moutarde'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Burger falafel et tahini', 'Falafel maison, sauce tahini citronnée, crudités, servi avec frites maison.', 8500, NULL, 'burgers', NULL, true, ARRAY['gluten','sesame'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    -- Burgers (servis avec frites maison)
+    ('Burger Chicken Avocado', 'Poulet pané, avocat, sauce blanche, servi avec frites maison.', 8500, 'https://images.unsplash.com/photo-1610970878459-a0e464d7592b?auto=format&fit=crop&w=800&q=70', 'burgers', NULL, true, ARRAY['gluten','lait','oeufs'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Burger Steak Cheddar', 'Steak haché, cheddar, bacon, oignons caramélisés, servi avec frites maison.', 8000, 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=800&q=70', 'burgers', NULL, true, ARRAY['gluten','lait'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Burger Classique', 'Steak 150 g, fromage, crudités, sauce maison, servi avec frites maison.', 7000, 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=70', 'burgers', NULL, true, ARRAY['gluten','lait','oeufs'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
 
-    ('Linguine aux fruits de mer et citron confit', 'Linguine al dente, moules, crevettes, calamars, persil et zeste de citron confit.', 11200, NULL, 'pates', NULL, true, ARRAY['gluten','crustaces'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Penne crème de champignons et parmesan', 'Penne, crème légère, champignons sautés, parmesan affiné et poivre noir.', 9700, NULL, 'pates', NULL, true, ARRAY['gluten','lait'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Tagliatelle au bœuf braisé, sauce tomate piment doux', 'Bœuf mijoté longuement, sauce tomate basilic et tagliatelle fraîches.', 10600, NULL, 'pates', NULL, true, ARRAY['gluten','lait'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    -- Pâtes
+    ('Tagliatelle Carbonara', 'Tagliatelles fraîches nappées d''une sauce crémeuse, lardons dorés et parmesan affiné.', 8000, 'https://images.unsplash.com/photo-1612966893103-790e549a2ab1?auto=format&fit=crop&w=800&q=70', 'pates', NULL, true, ARRAY['gluten','lait','oeufs'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Penne Poulet Champignons', 'Penne, émincé de poulet, champignons sautés et crème onctueuse, parmesan râpé.', 7500, 'https://images.unsplash.com/photo-1556761223-4c4282c73f77?auto=format&fit=crop&w=800&q=70', 'pates', NULL, true, ARRAY['gluten','lait'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Penne Saumon Crémeux', 'Penne accompagnées de saumon fondant, sauce crémeuse parfumée au citron et à l''aneth.', 9000, 'https://images.unsplash.com/photo-1551892374-ecf8754cf8b0?auto=format&fit=crop&w=800&q=70', 'pates', NULL, true, ARRAY['gluten','lait','poissons'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Lasagnes Maison', 'Feuilles de lasagnes, viande mijotée maison, béchamel onctueuse et fromage gratiné.', 8000, 'https://images.unsplash.com/photo-1574894709920-11b28e7367e3?auto=format&fit=crop&w=800&q=70', 'pates', NULL, true, ARRAY['gluten','lait'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
 
-    ('Filet de bœuf sauce poivre de Penja', 'Filet de bœuf saisi, sauce poivre de Penja, jus réduit.', 17000, NULL, 'viandes', NULL, true, ARRAY['lait'], true, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, true),
-    ('Côte d''agneau grillée aux herbes fraîches', 'Agneau grillé minute, thym frais, ail confit et jus d''agneau.', 16500, NULL, 'viandes', NULL, true, ARRAY[]::text[], true, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Entrecôte maturée, sauce chimichurri', 'Entrecôte maturée, sauce herbes fraîches, ail et citron.', 18500, NULL, 'viandes', NULL, true, ARRAY[]::text[], true, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    -- Viandes
+    ('Entrecôte du Grill', 'Entrecôte de bœuf grillée, accompagnée d''une sauce au choix.', 14000, 'https://images.unsplash.com/photo-1508615263227-c5d58c1e5821?auto=format&fit=crop&w=800&q=70', 'viandes', NULL, true, ARRAY[]::text[], true, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Faux-Filet de Bœuf Grillé', 'Faux-filet tendre et juteux, grillé au feu vif pour préserver toutes ses saveurs.', 12500, 'https://images.unsplash.com/photo-1633436375795-12b3b339712f?auto=format&fit=crop&w=800&q=70', 'viandes', NULL, true, ARRAY[]::text[], true, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Filet Mignon de Bœuf', 'Pièce noble de bœuf délicatement saisie, reconnue pour sa tendreté exceptionnelle.', 16000, 'https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=800&q=70', 'viandes', NULL, true, ARRAY[]::text[], true, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Bœuf Effiloché Confit', 'Bœuf longuement mijoté à basse température, effiloché, nappé d''une sauce réduite et savoureuse.', 11500, 'https://images.unsplash.com/photo-1594041680534-e8c8cdebd659?auto=format&fit=crop&w=800&q=70', 'viandes', NULL, true, ARRAY[]::text[], true, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
 
-    ('Suprême de poulet fermier sauce citronnelle', 'Poulet fermier rôti, sauce crémeuse citronnelle et gingembre.', 12600, NULL, 'volailles', NULL, true, ARRAY['lait'], true, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Coquelet rôti aux épices douces', 'Coquelet entier mariné aux épices maison et rôti lentement.', 13200, NULL, 'volailles', NULL, true, ARRAY[]::text[], true, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Cordon bleu maison de volaille', 'Volaille farcie au fromage et jambon de dinde, panure croustillante.', 12100, NULL, 'volailles', NULL, true, ARRAY['gluten','lait','oeufs'], true, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    -- Volailles
+    ('Cordon Bleu Maison', 'Volaille panée, fromage fondant et jambon.', 9500, 'https://images.unsplash.com/photo-1652545296821-09a023a9fd08?auto=format&fit=crop&w=800&q=70', 'volailles', NULL, true, ARRAY['gluten','lait','oeufs'], true, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Escalope Gratinée', 'Escalope de volaille, jambon et fromage gratiné.', 9000, 'https://images.unsplash.com/photo-1585325701956-60dd9c8553bc?auto=format&fit=crop&w=800&q=70', 'volailles', NULL, true, ARRAY['lait'], true, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
 
-    ('Filet de thiof grillé, beurre citron', 'Thiof frais grillé, beurre citronné et herbes fraîches.', 14500, NULL, 'poissons', NULL, true, ARRAY['poissons','lait'], true, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Pavé de saumon laqué au gingembre', 'Saumon laqué miel-gingembre, cuisson nacrée.', 15500, NULL, 'poissons', NULL, true, ARRAY['poissons','soja'], true, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Dorade entière à la braise', 'Dorade entière grillée à la braise, marinade ail-citron.', 16000, NULL, 'poissons', NULL, true, ARRAY['poissons'], true, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    -- Poissons
+    ('Poisson Braisé du Jour', 'Poisson frais selon arrivage (Capitaine, Dorade ou Thiof), délicatement braisé.', 13000, 'https://images.unsplash.com/photo-1600699899970-b1c9fadd8f9e?auto=format&fit=crop&w=800&q=70', 'poissons', NULL, true, ARRAY['poissons'], true, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, true),
+    ('Pavé de Saumon Grillé', 'Pavé de saumon grillé, nappé d''une sauce fraîche au citron et à l''aneth ou d''une sauce onctueuse aux échalotes finement ciselées.', 13000, 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=800&q=70', 'poissons', NULL, true, ARRAY['poissons','lait'], true, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Saumon Teriyaki', 'Saumon laqué à la sauce teriyaki, servi avec riz parfumé et légumes sautés croquants.', 14000, 'https://images.unsplash.com/photo-1560717845-968823efbee1?auto=format&fit=crop&w=800&q=70', 'poissons', NULL, true, ARRAY['poissons','soja','gluten'], true, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
 
-    ('Pizza Margherita Fior di Latte', 'Tomate San Marzano, Fior di Latte, basilic frais.', 9000, NULL, 'pizzas', NULL, true, ARRAY['gluten','lait'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Pizza Reine de Dakar', 'Tomate, mozzarella, jambon de dinde, champignons frais.', 10500, NULL, 'pizzas', NULL, true, ARRAY['gluten','lait'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Pizza Océane', 'Tomate, mozzarella, thon, oignons, olives noires.', 11000, NULL, 'pizzas', NULL, true, ARRAY['gluten','lait','poissons'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Pizza Quatre fromages', 'Mozzarella, parmesan, gorgonzola et emmental.', 11500, NULL, 'pizzas', NULL, true, ARRAY['gluten','lait'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    -- Pizzas base tomate
+    ('Pizza Margherita', 'Sauce tomate, mozzarella, origan.', 5000, 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=800&q=70', 'pizzas', 'Base tomate', true, ARRAY['gluten','lait'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Pizza Beef Lover', 'Sauce tomate, mozzarella, pepperoni.', 7000, 'https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=800&q=70', 'pizzas', 'Base tomate', true, ARRAY['gluten','lait'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Pizza Golden BBQ', 'Sauce BBQ, mozzarella, poulet grillé, oignons.', 7000, 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=800&q=70', 'pizzas', 'Base tomate', true, ARRAY['gluten','lait'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Pizza La Capri', 'Sauce tomate, mozzarella, thon, olives, oignons.', 6500, 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=70', 'pizzas', 'Base tomate', true, ARRAY['gluten','lait','poissons'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Pizza Végétarienne', 'Sauce tomate, mozzarella, légumes frais.', 6000, 'https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?auto=format&fit=crop&w=800&q=70', 'pizzas', 'Base tomate', true, ARRAY['gluten','lait'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Pizza Dibi – Signature', 'Sauce tomate, mozzarella, viande de dibi, oignons.', 8000, 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=800&q=70', 'pizzas', 'Base tomate', true, ARRAY['gluten','lait'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
 
-    ('Bissap Mojito', 'Infusion de bissap, citron vert, menthe fraîche et eau pétillante.', 4500, NULL, 'cocktails-sans-alcool', NULL, true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Ginger Passion Spritz', 'Jus de fruit de la passion, gingembre pressé et tonic.', 5000, NULL, 'cocktails-sans-alcool', NULL, true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Tropical coco ananas', 'Lait de coco, jus d''ananas frais et glace pilée.', 4800, NULL, 'cocktails-sans-alcool', NULL, true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Baobab Tonic', 'Pulpe de baobab, tonic premium, zeste d''orange.', 4300, NULL, 'cocktails-sans-alcool', NULL, true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    -- Pizzas base crème fraîche
+    ('Pizza Chèvre Miel', 'Base crème, mozzarella, fromage de chèvre, miel.', 7500, 'https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=800&q=70', 'pizzas', 'Base crème fraîche', true, ARRAY['gluten','lait'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Pizza Amalfi', 'Base crème, mozzarella, burrata, roquette.', 8000, 'https://images.unsplash.com/photo-1594007654729-407eedc4be65?auto=format&fit=crop&w=800&q=70', 'pizzas', 'Base crème fraîche', true, ARRAY['gluten','lait'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Pizza Bella Mare', 'Base crème, mozzarella, crevettes.', 7500, 'https://images.unsplash.com/photo-1571997478779-2adcbbe9ab2f?auto=format&fit=crop&w=800&q=70', 'pizzas', 'Base crème fraîche', true, ARRAY['gluten','lait','crustaces'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Pizza Norvégienne', 'Base crème, mozzarella, saumon.', 7500, 'https://images.unsplash.com/photo-1571066811602-716837d681de?auto=format&fit=crop&w=800&q=70', 'pizzas', 'Base crème fraîche', true, ARRAY['gluten','lait','poissons'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
 
-    ('Formule brunch classique', 'Boisson chaude, jus pressé minute, œufs brouillés, viennoiserie artisanale et salade de fruits.', 14500, NULL, 'brunch', 'Formules', true, ARRAY['gluten','oeufs','lait'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Formule brunch signature L''Adresse', 'Boisson chaude, jus pressé, œufs au choix, toast avocat saumon fumé, pancakes et granola maison.', 18500, NULL, 'brunch', 'Formules', true, ARRAY['gluten','oeufs','lait','poissons'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Avocado toast au saumon fumé', 'Pain levain grillé, avocat écrasé, saumon fumé et graines de sésame.', 9000, NULL, 'brunch', 'À la carte', true, ARRAY['gluten','poissons','sesame'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Pancakes banane caramélisée', 'Pancakes moelleux, banane caramélisée et sirop d''érable.', 7800, NULL, 'brunch', 'À la carte', true, ARRAY['gluten','oeufs','lait'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Chakchouka œufs fermiers', 'Tomates mijotées, poivrons, épices douces et œufs fermiers.', 8200, NULL, 'brunch', 'À la carte', true, ARRAY['oeufs'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false)
+    -- Créations du Bar : Virgins
+    ('Virgin Mojito Classique', 'Menthe fraîche, citron vert, sucre de canne, eau pétillante.', 4000, 'https://images.unsplash.com/photo-1654074517750-f854f7c27d62?auto=format&fit=crop&w=800&q=70', 'cocktails-sans-alcool', 'Virgins', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Virgin Mojito Passion', 'Menthe fraîche, fruit de la passion, citron vert, eau pétillante.', 4500, 'https://images.unsplash.com/photo-1595977514600-72cbc8376c38?auto=format&fit=crop&w=800&q=70', 'cocktails-sans-alcool', 'Virgins', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Virgin Mojito Fraise', 'Menthe fraîche, fraise, citron vert, eau pétillante.', 4500, 'https://images.unsplash.com/photo-1634496064950-02f043806b09?auto=format&fit=crop&w=800&q=70', 'cocktails-sans-alcool', 'Virgins', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Virgin Spritz Chic', 'Jus d''orange frais, bitter sans alcool, eau pétillante.', 4500, 'https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?auto=format&fit=crop&w=800&q=70', 'cocktails-sans-alcool', 'Virgins', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+
+    -- Créations du Bar : Cocktails
+    ('Passion Fizz', 'Fruit de la passion, citron vert, eau pétillante.', 5000, 'https://images.unsplash.com/photo-1499638673689-79a0b5115d87?auto=format&fit=crop&w=800&q=70', 'cocktails-sans-alcool', 'Cocktails', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Ginger Lemon', 'Citron pressé, ginger beer, sucre léger.', 5000, 'https://images.unsplash.com/photo-1654074518423-750767f571a9?auto=format&fit=crop&w=800&q=70', 'cocktails-sans-alcool', 'Cocktails', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Virgin Piña Colada', 'Ananas frais, lait de coco, glace pilée.', 5500, 'https://images.unsplash.com/photo-1610515660473-c11d4f3f7d37?auto=format&fit=crop&w=800&q=70', 'cocktails-sans-alcool', 'Cocktails', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Red Velvet', 'Fraise, framboise, citron, touche de vanille.', 5500, 'https://images.unsplash.com/photo-1661942477265-c6e3fbebb714?auto=format&fit=crop&w=800&q=70', 'cocktails-sans-alcool', 'Cocktails', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false)
 ) AS v(nom, description, prix, photo, cat_slug, sub_name, disponible, allergenes, a_accompagnement, restaurant_id, plat_du_jour)
 JOIN cat ON cat.slug = v.cat_slug
 LEFT JOIN sub ON sub.nom = v.sub_name
@@ -694,10 +715,4 @@ JOIN public.categories c ON c.id = i.categorie_id
 WHERE c.slug = 'pizzas' AND i.restaurant_id = '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'
 ON CONFLICT DO NOTHING;
 
--- Seed promotion
-INSERT INTO public.promotions (item_id, restaurant_id, type, valeur, date_debut, date_fin, active)
-SELECT i.id, i.restaurant_id, 'percent', 10, '2026-01-01T00:00:00Z', '2027-01-01T00:00:00Z', true
-FROM public.items i
-WHERE i.nom = 'Formule brunch signature L''Adresse'
-  AND i.restaurant_id = '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'
-ON CONFLICT DO NOTHING;
+-- No active promotion seeded with the current carte.

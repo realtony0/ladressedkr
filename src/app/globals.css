@@ -71,3 +71,67 @@ button {
 .animate-rise-in {
   animation: rise-in 280ms ease-out both;
 }
+
+@keyframes pop-in {
+  0% {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-pop-in {
+  animation: pop-in 220ms ease-out both;
+}
+
+/* Soft, layered shadows for a modern ordering-app feel */
+.shadow-card {
+  box-shadow: 0 1px 2px rgba(45, 74, 45, 0.04), 0 8px 24px -12px rgba(45, 74, 45, 0.18);
+}
+
+.shadow-float {
+  box-shadow: 0 8px 30px -8px rgba(45, 74, 45, 0.28);
+}
+
+/* Interactive product card that lifts on hover/press */
+.card-interactive {
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.card-interactive:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 32px -14px rgba(45, 74, 45, 0.32);
+}
+
+.card-interactive:active {
+  transform: translateY(-1px);
+}
+
+/* Decorative "photo" band used when a dish has no real image */
+.dish-media {
+  position: relative;
+  overflow: hidden;
+}
+
+.dish-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.45), transparent 45%),
+    radial-gradient(circle at 80% 85%, rgba(0, 0, 0, 0.08), transparent 50%);
+  pointer-events: none;
+}
+
+.hide-scrollbar {
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
