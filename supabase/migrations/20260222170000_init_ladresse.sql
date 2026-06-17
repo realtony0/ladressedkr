@@ -551,7 +551,7 @@ ON CONFLICT (id) DO UPDATE SET
 -- Seed tables 1..20
 INSERT INTO public.tables (numero, qr_code, statut, restaurant_id)
 SELECT gs.numero,
-       format('https://ladresse-dakar.vercel.app/%s', gs.numero),
+       format('https://ladressedkr.vercel.app/%s', gs.numero),
        'active',
        '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'
 FROM generate_series(1, 20) AS gs(numero)
