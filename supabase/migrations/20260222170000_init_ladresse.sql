@@ -240,10 +240,14 @@ FOR EACH ROW
 EXECUTE FUNCTION public.touch_updated_at();
 
 -- Auth helper functions
+-- SECURITY DEFINER bypasses RLS when querying public.users, preventing infinite recursion
+-- (policies on users call is_staff which would re-trigger users RLS without this)
 CREATE OR REPLACE FUNCTION public.current_role()
 RETURNS public.role_type
 LANGUAGE sql
 STABLE
+SECURITY DEFINER
+SET search_path = public
 AS $$
   SELECT role FROM public.users WHERE id = auth.uid() LIMIT 1;
 $$;
@@ -252,6 +256,8 @@ CREATE OR REPLACE FUNCTION public.current_restaurant_id()
 RETURNS uuid
 LANGUAGE sql
 STABLE
+SECURITY DEFINER
+SET search_path = public
 AS $$
   SELECT restaurant_id FROM public.users WHERE id = auth.uid() LIMIT 1;
 $$;
@@ -260,6 +266,8 @@ CREATE OR REPLACE FUNCTION public.is_staff(allowed public.role_type[])
 RETURNS BOOLEAN
 LANGUAGE sql
 STABLE
+SECURITY DEFINER
+SET search_path = public
 AS $$
   SELECT EXISTS (
     SELECT 1
@@ -416,6 +424,11 @@ CREATE POLICY orders_public_select ON public.orders
 FOR SELECT
 USING (true);
 
+DROP POLICY IF EXISTS orders_public_insert ON public.orders;
+CREATE POLICY orders_public_insert ON public.orders
+FOR INSERT
+WITH CHECK (true);
+
 DROP POLICY IF EXISTS orders_staff_manage ON public.orders;
 CREATE POLICY orders_staff_manage ON public.orders
 FOR ALL
@@ -427,6 +440,11 @@ DROP POLICY IF EXISTS order_items_public_select ON public.order_items;
 CREATE POLICY order_items_public_select ON public.order_items
 FOR SELECT
 USING (true);
+
+DROP POLICY IF EXISTS order_items_public_insert ON public.order_items;
+CREATE POLICY order_items_public_insert ON public.order_items
+FOR INSERT
+WITH CHECK (true);
 
 DROP POLICY IF EXISTS order_items_staff_manage ON public.order_items;
 CREATE POLICY order_items_staff_manage ON public.order_items
@@ -533,7 +551,7 @@ ON CONFLICT (id) DO UPDATE SET
 -- Seed tables 1..20
 INSERT INTO public.tables (numero, qr_code, statut, restaurant_id)
 SELECT gs.numero,
-       format('https://ladresse-dakar.vercel.app/%s', gs.numero),
+       format('https://ladressedkr.vercel.app/%s', gs.numero),
        'active',
        '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'
 FROM generate_series(1, 20) AS gs(numero)
@@ -700,6 +718,7 @@ LEFT JOIN sub ON sub.nom = v.sub_name
 ON CONFLICT (restaurant_id, nom) DO UPDATE SET
   description = EXCLUDED.description,
   prix = EXCLUDED.prix,
+  photo = EXCLUDED.photo,
   categorie_id = EXCLUDED.categorie_id,
   subcategorie_id = EXCLUDED.subcategorie_id,
   disponible = EXCLUDED.disponible,

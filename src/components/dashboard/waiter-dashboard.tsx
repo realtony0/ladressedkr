@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Printer } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useReactToPrint } from "react-to-print";
 
 import { Button } from "@/components/common/button";
 import { Badge, Card, CardTitle } from "@/components/common/card";
 import { PageShell } from "@/components/layout/page-shell";
+import { CaisseTicket, type CaisseTicketData } from "@/components/orders/caisse-ticket";
 import { formatDateTime, orderStatusLabel, serverCallReasonLabel } from "@/lib/helpers/format";
 import { playNotificationTone } from "@/lib/helpers/sound";
 import { getBrowserSupabase } from "@/lib/supabase/browser";
@@ -26,6 +29,7 @@ interface OrderView {
   id: string;
   statut: "received" | "preparing" | "ready";
   heure: string;
+  total: number;
   table: { numero: number } | null;
 }
 
@@ -37,6 +41,14 @@ export function WaiterDashboard() {
   const [orders, setOrders] = useState<OrderView[]>([]);
   const [readyOrders, setReadyOrders] = useState<OrderView[]>([]);
   const [loading, setLoading] = useState(true);
+  const [ticket, setTicket] = useState<CaisseTicketData | null>(null);
+
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const printNow = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: ticket ? `ticket-caisse-${ticket.orderId.slice(0, 8)}` : "ticket-caisse",
+  });
 
   async function loadData() {
     const supabase = getBrowserSupabase();
@@ -57,14 +69,14 @@ export function WaiterDashboard() {
         .order("heure", { ascending: false }),
       supabase
         .from("orders")
-        .select("id, statut, heure, table:tables(numero)")
+        .select("id, statut, heure, total, table:tables(numero)")
         .eq("restaurant_id", DEFAULT_RESTAURANT_ID)
         .in("statut", ["received", "preparing"])
         .gte("heure", todayStart.toISOString())
         .order("heure", { ascending: false }),
       supabase
         .from("orders")
-        .select("id, statut, heure, table:tables(numero)")
+        .select("id, statut, heure, total, table:tables(numero)")
         .eq("restaurant_id", DEFAULT_RESTAURANT_ID)
         .eq("statut", "ready")
         .gte("heure", todayStart.toISOString())
@@ -172,6 +184,63 @@ export function WaiterDashboard() {
     void loadData();
   }
 
+  const handlePrint = useCallback(
+    async (order: OrderView) => {
+      const supabase = getBrowserSupabase();
+      if (!supabase) return;
+
+      const { data } = await supabase
+        .from("orders")
+        .select(
+          "id, heure, total, table:tables(numero), order_items(quantite, note, prix_unitaire, supplement, item:items(nom), accompaniment:accompaniments(nom), pizza_size:pizza_sizes(taille))",
+        )
+        .eq("id", order.id)
+        .maybeSingle();
+
+      if (!data) return;
+
+      interface RawData {
+        id: string;
+        heure: string;
+        total: number;
+        table: { numero: number } | Array<{ numero: number }> | null;
+        order_items: Array<{
+          quantite: number;
+          note: string | null;
+          prix_unitaire: number;
+          supplement: number;
+          item: { nom: string } | Array<{ nom: string }> | null;
+          accompaniment: { nom: string } | Array<{ nom: string }> | null;
+          pizza_size: { taille: string } | Array<{ taille: string }> | null;
+        }>;
+      }
+
+      const raw = data as unknown as RawData;
+      const tableRaw = raw.table;
+      const tableNum = Array.isArray(tableRaw) ? (tableRaw[0]?.numero ?? 0) : (tableRaw?.numero ?? 0);
+
+      const ticketData: CaisseTicketData = {
+        orderId: raw.id,
+        tableNumero: tableNum,
+        heure: raw.heure,
+        total: raw.total,
+        lines: raw.order_items.map((oi) => ({
+          nom: (Array.isArray(oi.item) ? oi.item[0]?.nom : oi.item?.nom) ?? "—",
+          quantite: oi.quantite,
+          prix_unitaire: oi.prix_unitaire,
+          supplement: oi.supplement,
+          note: oi.note,
+          accompaniment: (Array.isArray(oi.accompaniment) ? oi.accompaniment[0]?.nom : oi.accompaniment?.nom) ?? null,
+          pizza_size: (Array.isArray(oi.pizza_size) ? oi.pizza_size[0]?.taille : oi.pizza_size?.taille) ?? null,
+        })),
+      };
+
+      setTicket(ticketData);
+      window.setTimeout(() => void printNow(), 120);
+    },
+    [printNow],
+  );
+
   const activeTableCount = useMemo(
     () => new Set([...orders, ...readyOrders].map((order) => order.table?.numero).filter(Boolean)).size,
     [orders, readyOrders],
@@ -179,6 +248,9 @@ export function WaiterDashboard() {
 
   return (
     <PageShell title={messages.waiter.title} subtitle="Alertes clients et commandes prêtes synchronisées en direct.">
+      {/* Hidden print area */}
+      <CaisseTicket ref={printRef} ticket={ticket} />
+
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <div className="flex items-center justify-between">
@@ -236,8 +308,25 @@ export function WaiterDashboard() {
             ) : (
               <ul className="mt-3 space-y-2">
                 {readyOrders.map((order) => (
-                  <li key={order.id} className="rounded-xl border border-[var(--color-light-gray)] p-2 text-sm">
-                    Commande #{order.id.slice(0, 8)} · Table {order.table?.numero ?? "-"}
+                  <li
+                    key={order.id}
+                    className="flex items-center justify-between gap-2 rounded-xl border border-[var(--color-light-gray)] p-3 text-sm"
+                  >
+                    <div>
+                      <p className="font-semibold text-[var(--color-dark-green)]">
+                        Table {order.table?.numero ?? "-"}
+                      </p>
+                      <p className="text-xs text-[var(--color-black)]/60">{formatDateTime(order.heure, locale)}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void handlePrint(order)}
+                      className="flex shrink-0 items-center gap-1.5 rounded-lg border border-[var(--color-dark-green)] px-3 py-1.5 text-xs font-semibold text-[var(--color-dark-green)] hover:bg-[var(--color-dark-green)] hover:text-white transition-colors"
+                      title="Imprimer ticket caisse Restobar"
+                    >
+                      <Printer className="h-3.5 w-3.5" />
+                      Ticket caisse
+                    </button>
                   </li>
                 ))}
               </ul>
