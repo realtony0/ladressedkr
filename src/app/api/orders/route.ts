@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { ACCOMPANIMENT_REQUIRED_SLUGS } from "@/lib/helpers/constants";
 import { applyPromotion } from "@/lib/data/menu";
-import { resolveActiveTableByAccessToken } from "@/lib/data/tables";
+import { resolveActiveTableByNumber } from "@/lib/data/tables";
 import { DEFAULT_RESTAURANT_ID } from "@/lib/supabase/env";
 import { getServiceSupabase } from "@/lib/supabase/server";
 
@@ -16,7 +16,7 @@ interface OrderLineInput {
 
 interface CreateOrderBody {
   tableNumber: number;
-  accessToken: string;
+  accessToken?: string;
   lines: OrderLineInput[];
   restaurantId?: string;
 }
@@ -39,7 +39,6 @@ export async function POST(request: Request) {
   if (
     !Number.isFinite(body.tableNumber) ||
     body.tableNumber <= 0 ||
-    !body.accessToken?.trim() ||
     !Array.isArray(body.lines) ||
     body.lines.length === 0
   ) {
@@ -47,7 +46,7 @@ export async function POST(request: Request) {
   }
 
   const resolvedRestaurantId = body.restaurantId?.trim() || DEFAULT_RESTAURANT_ID || null;
-  const tableResolution = await resolveActiveTableByAccessToken<{
+  const tableResolution = await resolveActiveTableByNumber<{
     id: string;
     numero: number;
     statut: "active" | "inactive";
@@ -55,7 +54,6 @@ export async function POST(request: Request) {
   }>({
     supabase,
     tableNumber: body.tableNumber,
-    accessToken: body.accessToken,
     restaurantId: resolvedRestaurantId,
     select: "id, numero, statut, restaurant_id",
   });

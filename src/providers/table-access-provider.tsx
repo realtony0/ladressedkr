@@ -23,7 +23,9 @@ export function TableAccessProvider({
 
   useEffect(() => {
     setIsReady(false);
-    setAccessToken(captureTableAccessTokenFromLocation(tableNumber));
+    // Try to capture from URL/localStorage; fall back to table number as open access
+    const captured = captureTableAccessTokenFromLocation(tableNumber);
+    setAccessToken(captured ?? tableNumber);
     setIsReady(true);
   }, [tableNumber]);
 
