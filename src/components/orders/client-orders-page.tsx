@@ -14,7 +14,6 @@ import { formatCurrency, formatDateTime, orderStatusLabel } from "@/lib/helpers/
 import { getOrderHistory } from "@/lib/helpers/session-history";
 import { useI18n } from "@/providers/i18n-provider";
 import { useNotifications } from "@/providers/notifications-provider";
-import { useTableAccess } from "@/providers/table-access-provider";
 
 interface TableView {
   id: string;
@@ -42,7 +41,6 @@ interface OrdersPayload {
 export function ClientOrdersPage({ tableId }: { tableId: string }) {
   const { locale, messages } = useI18n();
   const { notifyError, notifySuccess } = useNotifications();
-  const { isReady: tableAccessReady, accessToken } = useTableAccess();
 
   const [table, setTable] = useState<TableView | null>(null);
   const [activeOrders, setActiveOrders] = useState<OrderView[]>([]);
@@ -61,29 +59,11 @@ export function ClientOrdersPage({ tableId }: { tableId: string }) {
   }, [tableId, refreshTick]);
 
   const loadOrders = useCallback(async () => {
-    if (!tableAccessReady) {
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
-    if (!accessToken) {
-      setTable(null);
-      setActiveOrders([]);
-      setHistoryOrders([]);
-      setError(
-        locale === "fr"
-          ? "Session QR invalide. Rescanne le QR de ta table."
-          : "Invalid QR session. Please rescan your table QR.",
-      );
-      setLoading(false);
-      return;
-    }
-
     const params = new URLSearchParams();
     params.set("tableNumber", tableId);
-    params.set("accessToken", accessToken);
     if (DEFAULT_RESTAURANT_ID) {
       params.set("restaurantId", DEFAULT_RESTAURANT_ID);
     }
@@ -123,17 +103,13 @@ export function ClientOrdersPage({ tableId }: { tableId: string }) {
       );
       setLoading(false);
     }
-  }, [accessToken, historyIds, locale, tableAccessReady, tableId]);
+  }, [historyIds, locale, tableId]);
 
   useEffect(() => {
     void loadOrders();
   }, [loadOrders, refreshTick]);
 
   useEffect(() => {
-    if (!accessToken) {
-      return;
-    }
-
     const interval = window.setInterval(() => {
       setRefreshTick((value) => value + 1);
     }, 6000);
@@ -141,7 +117,7 @@ export function ClientOrdersPage({ tableId }: { tableId: string }) {
     return () => {
       window.clearInterval(interval);
     };
-  }, [accessToken]);
+  }, []);
 
   useEffect(() => {
     setRatingValues((current) => {
@@ -156,15 +132,6 @@ export function ClientOrdersPage({ tableId }: { tableId: string }) {
   }, [historyOrders]);
 
   async function submitRating(orderId: string) {
-    if (!accessToken) {
-      const message =
-        locale === "fr"
-          ? "Session QR invalide. Rescanne le QR de ta table."
-          : "Invalid QR session. Please rescan your table QR.";
-      notifyError(locale === "fr" ? "QR requis" : "QR required", message);
-      return;
-    }
-
     setSubmittingRatingOrderId(orderId);
     try {
       const response = await fetch("/api/ratings", {
@@ -177,7 +144,6 @@ export function ClientOrdersPage({ tableId }: { tableId: string }) {
           note: Number(ratingValues[orderId] ?? "5"),
           commentaire: ratingComments[orderId] ?? "",
           tableNumber: Number(tableId),
-          accessToken,
           restaurantId: DEFAULT_RESTAURANT_ID || undefined,
         }),
       });

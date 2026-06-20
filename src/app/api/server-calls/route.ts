@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 
-import { resolveActiveTableByAccessToken } from "@/lib/data/tables";
+import { resolveActiveTableByNumber } from "@/lib/data/tables";
 import { DEFAULT_RESTAURANT_ID } from "@/lib/supabase/env";
 import { getServiceSupabase } from "@/lib/supabase/server";
 import type { ServerCallReason } from "@/types/domain";
 
 interface CreateServerCallBody {
   tableNumber: number;
-  accessToken: string;
+  accessToken?: string;
   motif: ServerCallReason;
   details?: string;
   restaurantId?: string;
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
   const body = (await request.json()) as CreateServerCallBody;
 
-  if (!Number.isFinite(body.tableNumber) || body.tableNumber <= 0 || !body.accessToken?.trim()) {
+  if (!Number.isFinite(body.tableNumber) || body.tableNumber <= 0) {
     return NextResponse.json({ error: "Numéro de table invalide" }, { status: 400 });
   }
 
@@ -30,10 +30,9 @@ export async function POST(request: Request) {
   }
 
   const resolvedRestaurantId = body.restaurantId?.trim() || DEFAULT_RESTAURANT_ID || null;
-  const tableResolution = await resolveActiveTableByAccessToken<{ id: string; restaurant_id: string }>({
+  const tableResolution = await resolveActiveTableByNumber<{ id: string; restaurant_id: string }>({
     supabase,
     tableNumber: body.tableNumber,
-    accessToken: body.accessToken,
     restaurantId: resolvedRestaurantId,
     select: "id, restaurant_id",
   });

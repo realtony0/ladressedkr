@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { resolveActiveTableByAccessToken } from "@/lib/data/tables";
+import { resolveActiveTableByNumber } from "@/lib/data/tables";
 import { DEFAULT_RESTAURANT_ID } from "@/lib/supabase/env";
 import { getServiceSupabase } from "@/lib/supabase/server";
 
@@ -37,22 +37,20 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const tableNumber = Number(searchParams.get("tableNumber"));
-  const accessToken = searchParams.get("accessToken")?.trim() ?? "";
   const historyIds = parseHistoryIds(searchParams.get("historyIds"));
   const restaurantId = searchParams.get("restaurantId")?.trim() || DEFAULT_RESTAURANT_ID || null;
 
-  if (!Number.isFinite(tableNumber) || tableNumber <= 0 || !accessToken) {
-    return NextResponse.json({ error: "Paramètres table/access invalides." }, { status: 400 });
+  if (!Number.isFinite(tableNumber) || tableNumber <= 0) {
+    return NextResponse.json({ error: "Numéro de table invalide." }, { status: 400 });
   }
 
-  const tableResolution = await resolveActiveTableByAccessToken<{
+  const tableResolution = await resolveActiveTableByNumber<{
     id: string;
     numero: number;
     restaurant_id: string;
   }>({
     supabase,
     tableNumber,
-    accessToken,
     restaurantId,
     select: "id, numero, restaurant_id",
   });
@@ -63,7 +61,7 @@ export async function GET(request: Request) {
 
   const table = tableResolution.table;
   if (!table) {
-    return NextResponse.json({ error: "Session QR invalide ou expirée." }, { status: 403 });
+    return NextResponse.json({ error: "Table introuvable." }, { status: 404 });
   }
 
   const activeResult = await supabase
