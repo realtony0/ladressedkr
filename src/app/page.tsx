@@ -36,7 +36,9 @@ export default function Home() {
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[var(--color-dark-green)]/80 via-[var(--color-dark-green)]/65 to-[var(--color-dark-green)]/85" />
 
         <div className="mx-auto flex min-h-[72vh] w-full max-w-7xl flex-col items-center justify-center px-4 py-20 text-center md:px-6">
-          <p className="font-logo text-lg text-[var(--color-cream)]/90">L&apos;Adresse Dakar</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/logo-cream.png" alt="L'Adresse Dakar" className="h-24 w-auto md:h-28" />
+          <p className="mt-4 font-logo text-lg text-[var(--color-cream)]/90">L&apos;Adresse Dakar</p>
           <h1 className="mt-3 font-title text-4xl text-white sm:text-5xl md:text-6xl">
             Plus qu&apos;une table,
             <br />

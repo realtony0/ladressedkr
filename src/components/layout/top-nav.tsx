@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
 
+import { Brand } from "@/components/layout/brand";
 import { LanguageToggle } from "@/components/common/language-toggle";
 import { useI18n } from "@/providers/i18n-provider";
 
@@ -32,9 +33,7 @@ export function TopNav() {
     return (
       <header className="sticky top-0 z-30 border-b border-[var(--color-light-gray)] bg-[var(--color-cream)]/95 backdrop-blur">
         <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-3 md:px-6">
-          <span className="min-w-0 font-logo text-xl leading-none text-[var(--color-dark-green)] sm:text-2xl">
-            L’Adresse Dakar
-          </span>
+          <Brand size="sm" />
           <LanguageToggle />
         </div>
       </header>
@@ -47,9 +46,7 @@ export function TopNav() {
     return (
       <header className="sticky top-0 z-30 border-b border-[var(--color-light-gray)] bg-[var(--color-cream)]/95 backdrop-blur">
         <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6">
-          <Link href="/admin" className="font-logo text-2xl text-[var(--color-dark-green)]">
-            L’Adresse Dakar
-          </Link>
+          <Brand href="/admin" />
 
           <nav className="flex flex-wrap items-center gap-2">
             {!onDashboard ? (
@@ -90,9 +87,7 @@ export function TopNav() {
   return (
     <header className="sticky top-0 z-30 border-b border-[var(--color-light-gray)] bg-[var(--color-cream)]/95 backdrop-blur">
       <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6">
-        <Link href="/" className="font-logo text-2xl text-[var(--color-dark-green)]">
-          L’Adresse Dakar
-        </Link>
+        <Brand href="/" />
 
         <nav className="flex flex-wrap items-center gap-1.5">
           {vitrineLinks.map((link) => (
