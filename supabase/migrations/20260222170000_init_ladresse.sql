@@ -735,3 +735,51 @@ WHERE c.slug = 'pizzas' AND i.restaurant_id = '8f7c1bf8-feb5-4f34-88fb-781f2fd89
 ON CONFLICT DO NOTHING;
 
 -- No active promotion seeded with the current carte.
+
+-- Reservations (vitrine en ligne)
+DO $$ BEGIN
+  CREATE TYPE public.reservation_status AS ENUM ('pending', 'confirmed', 'declined', 'cancelled');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+CREATE TABLE IF NOT EXISTS public.reservations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  restaurant_id UUID NOT NULL REFERENCES public.restaurants(id) ON DELETE CASCADE,
+  nom TEXT NOT NULL,
+  telephone TEXT NOT NULL,
+  email TEXT,
+  date_reservation DATE NOT NULL,
+  heure TIME NOT NULL,
+  nb_personnes INT NOT NULL CHECK (nb_personnes > 0),
+  message TEXT,
+  statut public.reservation_status NOT NULL DEFAULT 'pending',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_reservations_restaurant ON public.reservations(restaurant_id, date_reservation);
+
+ALTER TABLE public.reservations ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS reservations_public_insert ON public.reservations;
+CREATE POLICY reservations_public_insert ON public.reservations FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS reservations_staff_select ON public.reservations;
+CREATE POLICY reservations_staff_select ON public.reservations FOR SELECT
+USING (public.is_staff(ARRAY['admin'::public.role_type, 'proprio'::public.role_type, 'serveur'::public.role_type]));
+
+DROP POLICY IF EXISTS reservations_staff_update ON public.reservations;
+CREATE POLICY reservations_staff_update ON public.reservations FOR UPDATE
+USING (public.is_staff(ARRAY['admin'::public.role_type, 'proprio'::public.role_type, 'serveur'::public.role_type]))
+WITH CHECK (public.is_staff(ARRAY['admin'::public.role_type, 'proprio'::public.role_type, 'serveur'::public.role_type]));
+
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime') THEN
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_publication_tables
+      WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'reservations'
+    ) THEN
+      ALTER PUBLICATION supabase_realtime ADD TABLE public.reservations;
+    END IF;
+  END IF;
+END;
+$$;

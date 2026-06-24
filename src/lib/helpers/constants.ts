@@ -30,10 +30,10 @@ export const ROLE_LABELS: Record<Role, string> = {
 };
 
 export const ROUTE_ROLE_RULES: Array<{ prefix: string; roles: Role[] }> = [
-  { prefix: "/cuisine", roles: ["cuisine", "admin", "proprio"] },
-  { prefix: "/serveur", roles: ["cuisine", "admin", "proprio"] },
+  { prefix: "/cuisine", roles: ["cuisine", "serveur", "admin", "proprio"] },
+  { prefix: "/serveur", roles: ["cuisine", "serveur", "admin", "proprio"] },
   { prefix: "/admin", roles: ["admin", "proprio"] },
-  { prefix: "/proprio", roles: ["proprio"] },
+  { prefix: "/proprio", roles: ["admin", "proprio"] },
   { prefix: "/commande", roles: ["cuisine", "serveur", "admin", "proprio"] },
   { prefix: "/appel-serveur", roles: ["cuisine", "serveur", "admin", "proprio"] },
 ];

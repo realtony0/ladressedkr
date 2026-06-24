@@ -74,7 +74,19 @@ export function TopNav() {
     );
   }
 
-  // Public pages (home): logo + discreet team area link.
+  // Public vitrine pages: showcase nav + discreet team area link.
+  const vitrineLinks = [
+    { href: "/", label: "Accueil" },
+    { href: "/carte", label: "La carte" },
+    { href: "/reservation", label: "Réserver" },
+    { href: "/infos", label: "Infos" },
+  ];
+
+  function isActive(href: string) {
+    if (href === "/") return pathname === "/";
+    return pathname.startsWith(href);
+  }
+
   return (
     <header className="sticky top-0 z-30 border-b border-[var(--color-light-gray)] bg-[var(--color-cream)]/95 backdrop-blur">
       <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6">
@@ -82,10 +94,23 @@ export function TopNav() {
           L’Adresse Dakar
         </Link>
 
-        <nav className="flex flex-wrap items-center gap-2">
+        <nav className="flex flex-wrap items-center gap-1.5">
+          {vitrineLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                isActive(link.href)
+                  ? "bg-[var(--color-dark-green)] text-white"
+                  : "bg-white text-[var(--color-dark-green)] hover:bg-[var(--color-light-gray)]"
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
           <Link
             href="/staff/login"
-            className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-[var(--color-dark-green)] transition-colors hover:bg-[var(--color-light-gray)]"
+            className="rounded-full px-3 py-1.5 text-xs font-semibold text-[var(--color-black)]/50 transition-colors hover:text-[var(--color-dark-green)]"
           >
             {messages.nav.staffArea}
           </Link>

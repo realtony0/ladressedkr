@@ -6,6 +6,22 @@ export type ServerCallStatus = "pending" | "acknowledged" | "closed";
 
 export type ServerCallReason = "addition" | "aide" | "demande_speciale";
 
+export type ReservationStatus = "pending" | "confirmed" | "declined" | "cancelled";
+
+export interface Reservation {
+  id: string;
+  restaurant_id: string;
+  nom: string;
+  telephone: string;
+  email: string | null;
+  date_reservation: string;
+  heure: string;
+  nb_personnes: number;
+  message: string | null;
+  statut: ReservationStatus;
+  created_at: string;
+}
+
 export type Locale = "fr" | "en";
 
 export type CategorySlug =
