@@ -9,7 +9,7 @@ export function routeForRole(role: Role) {
     case "admin":
       return "/admin";
     case "proprio":
-      return "/proprio";
+      return "/admin";
     default:
       return "/staff/login";
   }

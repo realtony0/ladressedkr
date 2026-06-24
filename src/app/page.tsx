@@ -1,52 +1,32 @@
 import Link from "next/link";
 
-import { Card, CardTitle } from "@/components/common/card";
+import { Button } from "@/components/common/button";
 import { PageShell } from "@/components/layout/page-shell";
-
-const modules = [
-  {
-    href: "/12",
-    title: "Expérience Client QR",
-    description: "Menu bilingue, filtre allergènes, panier, commande live, appel cuisine et suivi statut.",
-  },
-  {
-    href: "/cuisine",
-    title: "Dashboard Cuisine",
-    description: "Commandes en temps réel, ETA, tickets imprimables, gestion des ruptures et historique du jour.",
-  },
-  {
-    href: "/12/commandes",
-    title: "Commandes Client",
-    description: "Page dédiée au suivi des commandes en cours et à l'historique de session.",
-  },
-  {
-    href: "/admin",
-    title: "Administration",
-    description: "Page admin dédiée avec modules séparés: menu, QR, promotions, horaires et personnel.",
-  },
-  {
-    href: "/proprio",
-    title: "Vue Propriétaire",
-    description: "Page propriétaire dédiée avec accès dashboard analytics et rapports/export.",
-  },
-];
 
 export default function Home() {
   return (
     <PageShell
       title="L'Adresse Dakar"
-      subtitle="Plateforme fullstack de gestion restaurant: client, cuisine, admin et propriétaire, connectée à Supabase Realtime."
+      subtitle="Cuisine élégante entre esprit bistro parisien et fraîcheur africaine."
     >
-      <div className="grid gap-4 md:grid-cols-2">
-        {modules.map((module) => (
-          <Link key={module.href} href={module.href} className="animate-rise-in">
-            <Card className="h-full transition-transform hover:-translate-y-1">
-              <CardTitle className="font-heading text-2xl">{module.title}</CardTitle>
-              <p className="mt-3 text-sm text-[var(--color-black)]/80">{module.description}</p>
-              <span className="mt-4 inline-block text-sm font-bold text-[var(--color-sage)]">Ouvrir →</span>
-            </Card>
+      <div className="mx-auto max-w-xl text-center">
+        <p className="text-base text-[var(--color-black)]/75">
+          Découvrez notre carte et commandez directement depuis votre table.
+        </p>
+
+        <Link href="/1" className="mt-6 inline-block">
+          <Button className="px-8 py-3 text-base">Voir le menu</Button>
+        </Link>
+
+        <p className="mt-10 text-sm text-[var(--color-black)]/55">
+          Vous faites partie de l&apos;équipe ?{" "}
+          <Link
+            href="/staff/login"
+            className="font-semibold text-[var(--color-dark-green)] underline"
+          >
+            Espace équipe
           </Link>
-        ))}
+        </p>
       </div>
     </PageShell>
   );

@@ -23,14 +23,13 @@ export default function StaffLoginPage() {
 
   const [email, setEmail] = useState(PRIMARY_ADMIN_EMAIL);
   const [password, setPassword] = useState("");
-  const [staffCode, setStaffCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [nextPath, setNextPath] = useState<string | null>(null);
 
   const disabled = useMemo(
-    () => !email || !password || !staffCode || loading,
-    [email, password, staffCode, loading],
+    () => !email || !password || loading,
+    [email, password, loading],
   );
 
   useEffect(() => {
@@ -51,23 +50,6 @@ export default function StaffLoginPage() {
     }
 
     setLoading(true);
-
-    const staffCodeResponse = await fetch("/api/staff/access-code", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        code: staffCode,
-      }),
-    });
-
-    if (!staffCodeResponse.ok) {
-      setLoading(false);
-      setError(messages.auth.invalidCode);
-      notifyError("Accès refusé", messages.auth.invalidCode);
-      return;
-    }
 
     const { data, error: authError } = await supabase.auth.signInWithPassword({
       email,
@@ -138,16 +120,6 @@ export default function StaffLoginPage() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               autoComplete="current-password"
-              required
-            />
-          </div>
-          <div>
-            <FieldLabel>{messages.auth.accessCode}</FieldLabel>
-            <TextInput
-              type="password"
-              value={staffCode}
-              onChange={(event) => setStaffCode(event.target.value)}
-              autoComplete="one-time-code"
               required
             />
           </div>

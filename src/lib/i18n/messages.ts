@@ -28,6 +28,8 @@ export interface Messages {
     reports: string;
     staffLogin: string;
     logout: string;
+    dashboard: string;
+    staffArea: string;
   };
   client: {
     welcome: string;
@@ -148,6 +150,8 @@ export const messages: Record<Locale, Messages> = {
       reports: "Rapports",
       staffLogin: "Connexion staff",
       logout: "Se déconnecter",
+      dashboard: "Tableau de bord",
+      staffArea: "Espace équipe",
     },
     client: {
       welcome: "Bienvenue à L'Adresse Dakar",
@@ -266,6 +270,8 @@ export const messages: Record<Locale, Messages> = {
       reports: "Reports",
       staffLogin: "Staff login",
       logout: "Logout",
+      dashboard: "Dashboard",
+      staffArea: "Team area",
     },
     client: {
       welcome: "Welcome to L'Adresse Dakar",

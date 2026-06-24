@@ -5,6 +5,6 @@ export default async function CuisineLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  await requireRouteRoles(["cuisine", "admin", "proprio"]);
+  await requireRouteRoles(["cuisine", "serveur", "admin", "proprio"]);
   return children;
 }

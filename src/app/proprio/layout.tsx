@@ -5,6 +5,6 @@ export default async function ProprioLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  await requireRouteRoles(["proprio"]);
+  await requireRouteRoles(["admin", "proprio"]);
   return children;
 }
