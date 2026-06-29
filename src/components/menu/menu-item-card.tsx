@@ -48,6 +48,16 @@ const CATEGORY_MEDIA: Record<CategorySlug, { emoji: string; gradient: string }> 
   brunch: { emoji: "🥞", gradient: "from-[#e6c98f] to-[#c79a4c]" },
 };
 
+const DRINK_CATEGORY_SLUGS: CategorySlug[] = [
+  "cocktails-sans-alcool",
+  "smoothies",
+  "cocktails-glaces",
+  "milkshakes",
+  "boissons-chaudes",
+  "sodas-jus",
+  "eaux",
+];
+
 export function MenuItemCard({
   item,
   categorySlug,
@@ -108,6 +118,7 @@ export function MenuItemCard({
   }, [open]);
 
   const media = CATEGORY_MEDIA[categorySlug] ?? CATEGORY_MEDIA["entrees-salades"];
+  const showPhoto = Boolean(item.photo) && !DRINK_CATEGORY_SLUGS.includes(categorySlug);
 
   function emitAdd() {
     for (let i = 0; i < Math.max(1, quantity); i += 1) {
@@ -151,8 +162,8 @@ export function MenuItemCard({
   }
 
   const Media = (
-    <div className="dish-media relative">
-      {item.photo ? (
+    <div className="dish-media relative h-full w-full">
+      {showPhoto ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={item.photo} alt={item.nom} loading="lazy" className="h-full w-full object-cover" />
       ) : (
@@ -168,7 +179,7 @@ export function MenuItemCard({
         </span>
       ) : null}
       {promotion ? (
-        <span className="absolute left-2 top-2 z-10 rounded-full bg-[#9C3D3D] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white shadow-sm">
+        <span className="absolute right-2 top-2 z-10 rounded-full bg-[#9C3D3D] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white shadow-sm">
           {locale === "fr" ? "Promo" : "Deal"}
         </span>
       ) : null}
@@ -177,25 +188,34 @@ export function MenuItemCard({
 
   return (
     <>
-      <article className="card-interactive flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--color-light-gray)] bg-white shadow-card">
+      <article className="card-interactive flex h-full min-h-[7rem] overflow-hidden rounded-2xl border border-[var(--color-light-gray)] bg-white shadow-card sm:flex-col">
         {/* Tappable media + body opens the detail sheet */}
-        <button type="button" onClick={() => setOpen(true)} className="block h-28 w-full text-left sm:h-36">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="block h-36 w-36 shrink-0 text-left sm:h-44 sm:w-full"
+        >
           {Media}
         </button>
 
-        <div className="flex flex-1 flex-col gap-1 p-3">
+        <div className="flex min-w-0 flex-1 flex-col gap-2 p-3">
           <button type="button" onClick={() => setOpen(true)} className="text-left">
-            <h3 className="line-clamp-2 break-words font-heading text-sm leading-tight text-[var(--color-dark-green)]">
+            <h3 className="line-clamp-2 break-words font-heading text-lg leading-tight text-[var(--color-dark-green)] sm:text-base">
               {item.nom}
             </h3>
+            {item.description ? (
+              <p className="mt-1 line-clamp-2 text-xs leading-snug text-[var(--color-black)]/55 sm:hidden">
+                {item.description}
+              </p>
+            ) : null}
           </button>
 
-          <div className="mt-auto flex items-end justify-between gap-2 pt-1">
+          <div className="mt-auto flex items-end justify-between gap-2">
             <div className="min-w-0">
               {promotion ? (
                 <p className="text-[10px] text-[var(--color-black)]/40 line-through">{formatCurrency(basePrice, locale)}</p>
               ) : null}
-              <p className="text-sm font-extrabold text-[var(--color-dark-green)]">
+              <p className="text-base font-extrabold text-[var(--color-dark-green)]">
                 {formatCurrency(discountedPrice, locale)}
               </p>
             </div>
@@ -224,8 +244,8 @@ export function MenuItemCard({
             className="absolute inset-0 bg-black/50"
           />
           <div className="animate-rise-in relative z-10 max-h-[88vh] w-full overflow-y-auto rounded-t-3xl bg-white sm:max-w-md sm:rounded-3xl">
-            <div className="relative h-44">
-              {item.photo ? (
+            <div className="relative h-64 sm:h-72">
+              {showPhoto ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={item.photo} alt={item.nom} className="h-full w-full object-cover" />
               ) : (
