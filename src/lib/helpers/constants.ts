@@ -39,7 +39,7 @@ export const ROUTE_ROLE_RULES: Array<{ prefix: string; roles: Role[] }> = [
 ];
 
 export const DEFAULT_DELAY_ALERT_MINUTES = 18;
-export const MIN_STAFF_PASSWORD_LENGTH = 12;
+export const MIN_STAFF_PASSWORD_LENGTH = 6;
 
 export const LOCAL_STORAGE_KEYS = {
   locale: "ladresse.locale",

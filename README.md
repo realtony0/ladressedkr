@@ -87,7 +87,7 @@ Application locale: [http://localhost:3000](http://localhost:3000)
 - Staff: login via `/staff/login` (Supabase Auth)
 - Bootstrap admin initial via `/staff/setup-admin` (100% depuis le site)
 - Middleware de protection par rôle: `middleware.ts`
-- Email admin principal configuré: `ladresse.sn@outlook.fr`
+- Email admin principal configuré: `mbeuwdylam@gmail.com`
 
 ## Cron rapport quotidien
 `vercel.json` configure:
