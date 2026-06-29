@@ -4,11 +4,7 @@ import { Clock, Instagram, Mail, MapPin, Phone } from "lucide-react";
 import { Card, CardTitle } from "@/components/common/card";
 import { PageShell } from "@/components/layout/page-shell";
 
-const HOURS = [
-  { day: "Lundi – Vendredi", value: "12h00 – 15h00  ·  19h00 – 23h00" },
-  { day: "Samedi", value: "Brunch 10h00 – 16h00  ·  19h00 – 23h30" },
-  { day: "Dimanche", value: "Brunch 10h00 – 16h00" },
-];
+const HOURS = [{ day: "Tous les jours", value: "9h00 – 02h00" }];
 
 export default function InfosRoute() {
   return (
@@ -52,6 +48,12 @@ export default function InfosRoute() {
               className="flex items-center gap-2 text-sm font-semibold text-[var(--color-dark-green)]"
             >
               <Phone className="h-4 w-4" /> +221 77 439 21 99
+            </a>
+            <a
+              href="tel:+221776266439"
+              className="flex items-center gap-2 text-sm font-semibold text-[var(--color-dark-green)]"
+            >
+              <Phone className="h-4 w-4" /> +221 77 626 64 39
             </a>
             <a
               href="https://www.instagram.com/ladresse.lounge.dkr"

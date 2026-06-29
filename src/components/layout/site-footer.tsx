@@ -29,6 +29,11 @@ export function SiteFooter() {
                 </a>
               </li>
               <li>
+                <a href="tel:+221776266439" className="hover:text-white">
+                  +221 77 626 64 39
+                </a>
+              </li>
+              <li>
                 <a
                   href="https://www.instagram.com/ladresse.lounge.dkr"
                   target="_blank"

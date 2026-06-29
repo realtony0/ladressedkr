@@ -14,8 +14,8 @@ const HIGHLIGHTS = [
   },
   {
     icon: Clock,
-    title: "Midi & soir",
-    text: "Service le midi et le soir, brunch le week-end.",
+    title: "Tous les jours",
+    text: "Ouvert de 9h à 2h du matin, 7j/7.",
   },
   {
     icon: MapPin,
