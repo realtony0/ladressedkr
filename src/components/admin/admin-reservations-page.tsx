@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CalendarClock, Check, Phone, Users, X } from "lucide-react";
+import { CalendarClock, Check, MapPin, Phone, Users, X } from "lucide-react";
 
 import { Badge, Card, CardTitle } from "@/components/common/card";
 import { PageShell } from "@/components/layout/page-shell";
@@ -23,6 +23,11 @@ const STATUS_STYLE: Record<ReservationStatus, string> = {
   declined: "bg-[#ffe4e4] text-[#8b2424]",
   cancelled: "bg-[var(--color-light-gray)] text-[var(--color-black)]/60",
 };
+
+const LOCATION_LABEL = {
+  interieur: "Intérieur",
+  terrasse: "Terrasse",
+} as const;
 
 function formatDate(dateStr: string) {
   try {
@@ -138,6 +143,9 @@ export function AdminReservationsPage() {
                         <p className="mt-1 flex items-center gap-1.5 text-sm text-[var(--color-black)]/75">
                           <Users className="h-4 w-4" /> {r.nb_personnes} personne{r.nb_personnes > 1 ? "s" : ""}
                         </p>
+                        <p className="mt-1 flex items-center gap-1.5 text-sm text-[var(--color-black)]/75">
+                          <MapPin className="h-4 w-4" /> {LOCATION_LABEL[r.emplacement]}
+                        </p>
                         <a
                           href={`tel:${r.telephone}`}
                           className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-[var(--color-dark-green)] underline"
@@ -188,7 +196,8 @@ export function AdminReservationsPage() {
                       <span className="font-semibold text-[var(--color-dark-green)]">{r.nom}</span>
                       <span className="text-[var(--color-black)]/65">
                         {" "}
-                        · {formatDate(r.date_reservation)} à {r.heure.slice(0, 5)} · {r.nb_personnes} pers.
+                        · {formatDate(r.date_reservation)} à {r.heure.slice(0, 5)} · {r.nb_personnes} pers. ·{" "}
+                        {LOCATION_LABEL[r.emplacement]}
                       </span>
                     </div>
                     <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLE[r.statut]}`}>

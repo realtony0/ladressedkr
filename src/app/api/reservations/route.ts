@@ -11,6 +11,7 @@ interface CreateReservationBody {
   date: string;
   heure: string;
   nbPersonnes: number;
+  emplacement?: string;
   message?: string;
   restaurantId?: string;
 }
@@ -29,6 +30,7 @@ export async function POST(request: Request) {
   const nom = body.nom?.trim();
   const telephone = body.telephone?.trim();
   const nbPersonnes = Math.floor(Number(body.nbPersonnes));
+  const emplacement = body.emplacement === "terrasse" ? "terrasse" : "interieur";
 
   if (!nom || !telephone) {
     return NextResponse.json({ error: "Nom et téléphone obligatoires." }, { status: 400 });
@@ -53,6 +55,7 @@ export async function POST(request: Request) {
     date_reservation: body.date,
     heure: body.heure,
     nb_personnes: nbPersonnes,
+    emplacement,
     message: body.message?.trim() || null,
     statut: "pending",
   });

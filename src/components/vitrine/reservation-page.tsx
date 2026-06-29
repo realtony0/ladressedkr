@@ -15,6 +15,8 @@ const TIME_SLOTS = [
   "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00",
 ];
 
+type ReservationLocation = "interieur" | "terrasse";
+
 export function VitrineReservationPage() {
   const [nom, setNom] = useState("");
   const [telephone, setTelephone] = useState("");
@@ -22,6 +24,7 @@ export function VitrineReservationPage() {
   const [date, setDate] = useState("");
   const [heure, setHeure] = useState("20:00");
   const [nbPersonnes, setNbPersonnes] = useState("2");
+  const [emplacement, setEmplacement] = useState<ReservationLocation>("interieur");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +47,7 @@ export function VitrineReservationPage() {
           date,
           heure,
           nbPersonnes: Number(nbPersonnes),
+          emplacement,
           message,
           restaurantId: DEFAULT_RESTAURANT_ID || undefined,
         }),
@@ -71,7 +75,8 @@ export function VitrineReservationPage() {
           <CardTitle className="mt-4 font-heading text-3xl">Demande envoyée !</CardTitle>
           <p className="mt-3 text-sm text-[var(--color-black)]/70">
             Merci {nom.split(" ")[0]}. Nous avons bien reçu votre demande de réservation
-            pour {nbPersonnes} personne(s). Le restaurant vous confirmera très vite par téléphone.
+            pour {nbPersonnes} personne(s), {emplacement === "terrasse" ? "en terrasse" : "en intérieur"}.
+            Le restaurant vous confirmera très vite par téléphone.
           </p>
           <Link href="/" className="mt-6 inline-block">
             <Button variant="secondary">Retour à l&apos;accueil</Button>
@@ -139,6 +144,46 @@ export function VitrineReservationPage() {
                 </option>
               ))}
             </Select>
+          </div>
+
+          <div>
+            <FieldLabel>Emplacement souhaité *</FieldLabel>
+            <div className="grid grid-cols-2 gap-2">
+              <label
+                className={`flex cursor-pointer items-center justify-center rounded-xl border px-3 py-2 text-sm font-semibold transition-colors ${
+                  emplacement === "interieur"
+                    ? "border-[var(--color-dark-green)] bg-[var(--color-dark-green)] text-white"
+                    : "border-[var(--color-light-gray)] bg-white text-[var(--color-dark-green)]"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="emplacement"
+                  value="interieur"
+                  checked={emplacement === "interieur"}
+                  onChange={() => setEmplacement("interieur")}
+                  className="sr-only"
+                />
+                Intérieur
+              </label>
+              <label
+                className={`flex cursor-pointer items-center justify-center rounded-xl border px-3 py-2 text-sm font-semibold transition-colors ${
+                  emplacement === "terrasse"
+                    ? "border-[var(--color-dark-green)] bg-[var(--color-dark-green)] text-white"
+                    : "border-[var(--color-light-gray)] bg-white text-[var(--color-dark-green)]"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="emplacement"
+                  value="terrasse"
+                  checked={emplacement === "terrasse"}
+                  onChange={() => setEmplacement("terrasse")}
+                  className="sr-only"
+                />
+                Terrasse
+              </label>
+            </div>
           </div>
 
           <div>

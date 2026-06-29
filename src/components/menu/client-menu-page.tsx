@@ -465,6 +465,19 @@ function MenuBoard({ tableId }: { tableId: string }) {
   const brunchOpen = isBrunchCurrentlyOpen(catalog.serviceHours);
   const visibleCountLabel =
     locale === "fr" ? `${visibleItemCount} plats affichés` : `${visibleItemCount} dishes shown`;
+  const menuStatusLabel = syncingMenu
+    ? locale === "fr"
+      ? "Synchronisation du menu..."
+      : "Syncing menu..."
+    : null;
+  const activeOrderLabel =
+    activeOrderCount > 1
+      ? locale === "fr"
+        ? `${activeOrderCount} commandes actives`
+        : `${activeOrderCount} active orders`
+      : locale === "fr"
+        ? "Suivre ma commande"
+        : "Track order";
 
   const totalQty = lines.reduce((sum, line) => sum + line.quantity, 0);
 
@@ -485,13 +498,20 @@ function MenuBoard({ tableId }: { tableId: string }) {
               {messages.common.table} {table.numero} · {visibleCountLabel}
               {menuSource === "offline" ? " · hors-ligne" : ""}
             </p>
+            {menuStatusLabel || loadingActiveOrder ? (
+              <p className="mt-1 text-xs font-semibold text-[var(--color-sage)]">
+                {[menuStatusLabel, loadingActiveOrder ? (locale === "fr" ? "Vérification des commandes..." : "Checking orders...") : null]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            ) : null}
           </div>
           {activeOrder ? (
             <Link
               href={`/${tableId}/commandes`}
               className="shrink-0 rounded-full bg-[#eef4ee] px-3 py-1.5 text-xs font-bold text-[var(--color-dark-green)]"
             >
-              {locale === "fr" ? "Suivre ma commande →" : "Track order →"}
+              {activeOrderLabel} →
             </Link>
           ) : null}
         </div>

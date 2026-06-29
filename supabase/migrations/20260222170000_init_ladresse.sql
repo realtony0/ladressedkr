@@ -567,7 +567,7 @@ VALUES
   ('Volailles', 'volailles', 'Drumstick', 5, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'),
   ('Poissons', 'poissons', 'Fish', 6, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'),
   ('Pizzas', 'pizzas', 'Pizza', 7, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'),
-  ('Cocktails sans alcool', 'cocktails-sans-alcool', 'GlassWater', 8, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55')
+  ('Menu Bar', 'cocktails-sans-alcool', 'GlassWater', 8, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55')
 ON CONFLICT (restaurant_id, slug) DO UPDATE SET
   nom = EXCLUDED.nom,
   icone = EXCLUDED.icone,
@@ -580,8 +580,14 @@ FROM (
   VALUES
     ('Base tomate', 1, 'pizzas'),
     ('Base crème fraîche', 2, 'pizzas'),
-    ('Virgins', 1, 'cocktails-sans-alcool'),
-    ('Cocktails', 2, 'cocktails-sans-alcool')
+    ('Virgin Cocktail', 1, 'cocktails-sans-alcool'),
+    ('Smoothies', 2, 'cocktails-sans-alcool'),
+    ('Cocktails glacés', 3, 'cocktails-sans-alcool'),
+    ('Milkshakes', 4, 'cocktails-sans-alcool'),
+    ('Frappuccino', 5, 'cocktails-sans-alcool'),
+    ('Boissons chaudes', 6, 'cocktails-sans-alcool'),
+    ('Soda et jus', 7, 'cocktails-sans-alcool'),
+    ('Eaux minérales', 8, 'cocktails-sans-alcool')
 ) AS v(nom, ordre, cat_slug)
 JOIN public.categories c
   ON c.slug = v.cat_slug AND c.restaurant_id = '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'
@@ -701,17 +707,79 @@ FROM (
     ('Pizza Bella Mare', 'Base crème, mozzarella, crevettes.', 7500, 'https://images.unsplash.com/photo-1571997478779-2adcbbe9ab2f?auto=format&fit=crop&w=800&q=70', 'pizzas', 'Base crème fraîche', true, ARRAY['gluten','lait','crustaces'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
     ('Pizza Norvégienne', 'Base crème, mozzarella, saumon.', 7500, 'https://images.unsplash.com/photo-1571066811602-716837d681de?auto=format&fit=crop&w=800&q=70', 'pizzas', 'Base crème fraîche', true, ARRAY['gluten','lait','poissons'], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
 
-    -- Créations du Bar : Virgins
-    ('Virgin Mojito Classique', 'Menthe fraîche, citron vert, sucre de canne, eau pétillante.', 4000, 'https://images.unsplash.com/photo-1654074517750-f854f7c27d62?auto=format&fit=crop&w=800&q=70', 'cocktails-sans-alcool', 'Virgins', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Virgin Mojito Passion', 'Menthe fraîche, fruit de la passion, citron vert, eau pétillante.', 4500, 'https://images.unsplash.com/photo-1595977514600-72cbc8376c38?auto=format&fit=crop&w=800&q=70', 'cocktails-sans-alcool', 'Virgins', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Virgin Mojito Fraise', 'Menthe fraîche, fraise, citron vert, eau pétillante.', 4500, 'https://images.unsplash.com/photo-1634496064950-02f043806b09?auto=format&fit=crop&w=800&q=70', 'cocktails-sans-alcool', 'Virgins', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Virgin Spritz Chic', 'Jus d''orange frais, bitter sans alcool, eau pétillante.', 4500, 'https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?auto=format&fit=crop&w=800&q=70', 'cocktails-sans-alcool', 'Virgins', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    -- Menu Bar : Virgin Cocktail
+    ('TERANGA', 'Jus de bouye, mangue, menthe fraîche, passion.', 4000, NULL, 'cocktails-sans-alcool', 'Virgin Cocktail', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('BISSAP SUNRISE', 'Bissap, jus d''ananas, jus d''orange, sirop de vanille.', 4000, NULL, 'cocktails-sans-alcool', 'Virgin Cocktail', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Boom Passion', 'Jus d''agrumes, citron vert, sirop de passion, Sprite.', 4000, NULL, 'cocktails-sans-alcool', 'Virgin Cocktail', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Ginger vibes', 'Ananas, passion, citron, gingembre.', 4000, NULL, 'cocktails-sans-alcool', 'Virgin Cocktail', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Coconut ups', 'Ananas, lait de coco, crème, gingembre.', 4000, NULL, 'cocktails-sans-alcool', 'Virgin Cocktail', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('After glow', 'Orange, ananas, gingembre.', 4000, NULL, 'cocktails-sans-alcool', 'Virgin Cocktail', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Limonada', 'Citron, sucre de canne, menthe.', 4000, NULL, 'cocktails-sans-alcool', 'Virgin Cocktail', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Romantica', 'Bissap, goyave, menthe.', 4000, NULL, 'cocktails-sans-alcool', 'Virgin Cocktail', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Passion Breez', 'Jus de fruit de la passion, jus d''orange, cranberry.', 4000, NULL, 'cocktails-sans-alcool', 'Virgin Cocktail', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Exotique', 'Jus de mangue, jus de fruit de la passion, jus de goyave, grenadine.', 4000, NULL, 'cocktails-sans-alcool', 'Virgin Cocktail', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Virgin Piña Colada', 'Ananas frais, lait de coco, glace pilée.', 4000, NULL, 'cocktails-sans-alcool', 'Virgin Cocktail', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Virgin Mojito Classique', 'Menthe fraîche, citron vert, sucre de canne, eau pétillante.', 4000, NULL, 'cocktails-sans-alcool', 'Virgin Cocktail', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Virgin Mojito Fraise', 'Menthe fraîche, fraise, citron vert, sucre de canne, eau pétillante.', 4000, NULL, 'cocktails-sans-alcool', 'Virgin Cocktail', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Virgin Mojito Passion', 'Menthe fraîche, fruit de la passion, citron vert, eau pétillante.', 4000, NULL, 'cocktails-sans-alcool', 'Virgin Cocktail', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Virgin Spritz Chic', 'Jus d''orange frais, fleur de sureau sans alcool, eau pétillante.', 4000, NULL, 'cocktails-sans-alcool', 'Virgin Cocktail', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Passion Fizz', 'Fruit de la passion, citron vert, eau pétillante.', 4000, NULL, 'cocktails-sans-alcool', 'Virgin Cocktail', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Ginger Lemon', 'Citron pressé, ginger beer, sucre léger.', 4000, NULL, 'cocktails-sans-alcool', 'Virgin Cocktail', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Red Velvet', 'Fraise, framboise, citron, touche de vanille.', 4000, NULL, 'cocktails-sans-alcool', 'Virgin Cocktail', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
 
-    -- Créations du Bar : Cocktails
-    ('Passion Fizz', 'Fruit de la passion, citron vert, eau pétillante.', 5000, 'https://images.unsplash.com/photo-1499638673689-79a0b5115d87?auto=format&fit=crop&w=800&q=70', 'cocktails-sans-alcool', 'Cocktails', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Ginger Lemon', 'Citron pressé, ginger beer, sucre léger.', 5000, 'https://images.unsplash.com/photo-1654074518423-750767f571a9?auto=format&fit=crop&w=800&q=70', 'cocktails-sans-alcool', 'Cocktails', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Virgin Piña Colada', 'Ananas frais, lait de coco, glace pilée.', 5500, 'https://images.unsplash.com/photo-1610515660473-c11d4f3f7d37?auto=format&fit=crop&w=800&q=70', 'cocktails-sans-alcool', 'Cocktails', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
-    ('Red Velvet', 'Fraise, framboise, citron, touche de vanille.', 5500, 'https://images.unsplash.com/photo-1661942477265-c6e3fbebb714?auto=format&fit=crop&w=800&q=70', 'cocktails-sans-alcool', 'Cocktails', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false)
+    -- Menu Bar : Smoothies
+    ('Paradise', 'Mangue, ananas, banane, lait de coco.', 4000, NULL, 'cocktails-sans-alcool', 'Smoothies', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Rose', 'Fraise, banane, lait de coco.', 4000, NULL, 'cocktails-sans-alcool', 'Smoothies', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Nioko book', 'Mangue, orange, ananas.', 4000, NULL, 'cocktails-sans-alcool', 'Smoothies', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Energy Smoothie', 'Mangue, ananas, gingembre, jus d''orange, miel.', 4000, NULL, 'cocktails-sans-alcool', 'Smoothies', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Detox', 'Fruits rouges, banane, lait de coco, gingembre, miel.', 4000, NULL, 'cocktails-sans-alcool', 'Smoothies', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Summer Smoothie', 'Fraise, sirop de fraise, jus d''ananas.', 4000, NULL, 'cocktails-sans-alcool', 'Smoothies', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Piña Banane', 'Banane, ananas, jus d''ananas, lait de coco.', 4000, NULL, 'cocktails-sans-alcool', 'Smoothies', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Strawberry Colada', 'Fraise, banane, ananas, jus d''ananas, lait de coco.', 4000, NULL, 'cocktails-sans-alcool', 'Smoothies', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Raspberry Sunrise', 'Framboise, mangue, jus d''orange.', 4000, NULL, 'cocktails-sans-alcool', 'Smoothies', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+
+    -- Menu Bar : Cocktails glacés
+    ('Citric', 'Sorbet framboise, sorbet citron mixés avec jus d''orange.', 4000, NULL, 'cocktails-sans-alcool', 'Cocktails glacés', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Tropical', 'Sorbet mangue, sorbet citron mixés avec jus d''orange, kiwi et banane.', 4000, NULL, 'cocktails-sans-alcool', 'Cocktails glacés', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Mangolito', 'Sorbet fruit de la passion, sorbet mangue, soda water.', 4000, NULL, 'cocktails-sans-alcool', 'Cocktails glacés', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+
+    -- Menu Bar : Milkshakes
+    ('Vanille', 'Vanille, lait.', 5000, NULL, 'cocktails-sans-alcool', 'Milkshakes', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Vanille choco', 'Vanille, chocolat, lait.', 5000, NULL, 'cocktails-sans-alcool', 'Milkshakes', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Double chocolat', 'Vanille, chocolat, chocolat noir, lait.', 5000, NULL, 'cocktails-sans-alcool', 'Milkshakes', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Métisse', 'Vanille, caramel, lait.', 5000, NULL, 'cocktails-sans-alcool', 'Milkshakes', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+
+    -- Menu Bar : Frappuccino
+    ('Mocha', 'Expresso, lait, sirop de chocolat, crème fouettée.', 4000, NULL, 'cocktails-sans-alcool', 'Frappuccino', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Caramel', 'Expresso, lait, sirop de caramel, crème fouettée.', 4000, NULL, 'cocktails-sans-alcool', 'Frappuccino', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+
+    -- Menu Bar : Boissons chaudes
+    ('Expresso', 'Expresso.', 1500, NULL, 'cocktails-sans-alcool', 'Boissons chaudes', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Thé Infusion', 'Thé infusion.', 1500, NULL, 'cocktails-sans-alcool', 'Boissons chaudes', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Café au lait', 'Café au lait.', 2000, NULL, 'cocktails-sans-alcool', 'Boissons chaudes', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Lait chaud', 'Lait chaud.', 2000, NULL, 'cocktails-sans-alcool', 'Boissons chaudes', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Double Café', 'Double café.', 3000, NULL, 'cocktails-sans-alcool', 'Boissons chaudes', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Cappuccino', 'Cappuccino.', 2500, NULL, 'cocktails-sans-alcool', 'Boissons chaudes', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Cappuccino Viennois', 'Cappuccino viennois.', 3000, NULL, 'cocktails-sans-alcool', 'Boissons chaudes', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Thé Glacé', 'Thé glacé.', 2000, NULL, 'cocktails-sans-alcool', 'Boissons chaudes', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Café Viennois', 'Café viennois.', 2000, NULL, 'cocktails-sans-alcool', 'Boissons chaudes', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Noisette', 'Café noisette.', 2000, NULL, 'cocktails-sans-alcool', 'Boissons chaudes', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Chocolat Chaud', 'Chocolat chaud.', 2500, NULL, 'cocktails-sans-alcool', 'Boissons chaudes', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Caramel Macchiato', 'Caramel macchiato.', 3000, NULL, 'cocktails-sans-alcool', 'Boissons chaudes', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Mocha Café', 'Expresso, lait, sirop de chocolat, crème fouettée.', 3000, NULL, 'cocktails-sans-alcool', 'Boissons chaudes', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Affogato', 'Expresso, glace vanille, crème fouettée.', 3000, NULL, 'cocktails-sans-alcool', 'Boissons chaudes', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+
+    -- Menu Bar : Soda et jus
+    ('Boisson gazeuse', 'Coca, Fanta, Sprite, tonic, soda water.', 2000, NULL, 'cocktails-sans-alcool', 'Soda et jus', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Red Bull', 'Red Bull.', 2500, NULL, 'cocktails-sans-alcool', 'Soda et jus', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Jus locaux', 'Bissap, bouye, ginger.', 2000, NULL, 'cocktails-sans-alcool', 'Soda et jus', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Jus pressé', 'Orange, pamplemousse, citron.', 3000, NULL, 'cocktails-sans-alcool', 'Soda et jus', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+
+    -- Menu Bar : Eaux minérales
+    ('Eau locale 1.5 L', 'Eau minérale locale 1.5 L.', 1500, NULL, 'cocktails-sans-alcool', 'Eaux minérales', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Eau importée 1.5 L', 'Eau minérale importée 1.5 L.', 2500, NULL, 'cocktails-sans-alcool', 'Eaux minérales', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Eau gazeuse', 'Eau gazeuse.', 3000, NULL, 'cocktails-sans-alcool', 'Eaux minérales', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false),
+    ('Perrier 33 cl', 'Perrier 33 cl.', 3000, NULL, 'cocktails-sans-alcool', 'Eaux minérales', true, ARRAY[]::text[], false, '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55'::uuid, false)
 ) AS v(nom, description, prix, photo, cat_slug, sub_name, disponible, allergenes, a_accompagnement, restaurant_id, plat_du_jour)
 JOIN cat ON cat.slug = v.cat_slug
 LEFT JOIN sub ON sub.nom = v.sub_name
@@ -741,6 +809,10 @@ DO $$ BEGIN
   CREATE TYPE public.reservation_status AS ENUM ('pending', 'confirmed', 'declined', 'cancelled');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+DO $$ BEGIN
+  CREATE TYPE public.reservation_location AS ENUM ('interieur', 'terrasse');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
 CREATE TABLE IF NOT EXISTS public.reservations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   restaurant_id UUID NOT NULL REFERENCES public.restaurants(id) ON DELETE CASCADE,
@@ -750,6 +822,7 @@ CREATE TABLE IF NOT EXISTS public.reservations (
   date_reservation DATE NOT NULL,
   heure TIME NOT NULL,
   nb_personnes INT NOT NULL CHECK (nb_personnes > 0),
+  emplacement public.reservation_location NOT NULL DEFAULT 'interieur',
   message TEXT,
   statut public.reservation_status NOT NULL DEFAULT 'pending',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()

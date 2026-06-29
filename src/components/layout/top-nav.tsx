@@ -57,13 +57,13 @@ export function TopNav() {
                 {messages.nav.dashboard}
               </Link>
             ) : null}
-            <a
+            <Link
               href="/staff/logout"
               className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-[var(--color-dark-green)] transition-colors hover:bg-[var(--color-light-gray)]"
             >
               <LogOut className="h-3.5 w-3.5" />
               {messages.nav.logout}
-            </a>
+            </Link>
             <LanguageToggle />
           </nav>
         </div>
