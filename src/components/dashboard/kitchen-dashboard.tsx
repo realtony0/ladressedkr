@@ -11,7 +11,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { DEFAULT_DELAY_ALERT_MINUTES, ORDER_STATUS_FLOW } from "@/lib/helpers/constants";
 import { cn } from "@/lib/helpers/cn";
 import { formatCurrency, formatDateTime, orderStatusLabel, serverCallReasonLabel } from "@/lib/helpers/format";
-import { playNotificationTone } from "@/lib/helpers/sound";
+import { isAudioUnlocked, playNotificationTone, unlockAudio } from "@/lib/helpers/sound";
 import { getBrowserSupabase } from "@/lib/supabase/browser";
 import { DEFAULT_RESTAURANT_ID } from "@/lib/supabase/env";
 import { useI18n } from "@/providers/i18n-provider";
@@ -94,6 +94,30 @@ export function KitchenDashboard({ historyOnly = false }: { historyOnly?: boolea
   const [etaDrafts, setEtaDrafts] = useState<Record<string, string>>({});
   const [newOrderIds, setNewOrderIds] = useState<string[]>([]);
   const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
+  const [soundReady, setSoundReady] = useState(false);
+
+  useEffect(() => {
+    setSoundReady(isAudioUnlocked());
+  }, []);
+
+  const enableSound = useCallback(async () => {
+    const ok = await unlockAudio();
+    setSoundReady(ok);
+    if (ok) {
+      playNotificationTone("new_order");
+      setPreferences((current) => ({ ...current, soundEnabled: true }));
+    }
+  }, []);
+
+  // Re-beep every few seconds while brand-new orders are waiting, so the kitchen
+  // never misses one — stops as soon as they're acknowledged (status advanced).
+  useEffect(() => {
+    if (historyOnly || !preferences.soundEnabled || !soundReady || newOrderIds.length === 0) {
+      return;
+    }
+    const interval = window.setInterval(() => playNotificationTone("new_order"), 3500);
+    return () => window.clearInterval(interval);
+  }, [historyOnly, preferences.soundEnabled, soundReady, newOrderIds]);
 
   const printRef = useRef<HTMLDivElement>(null);
   const previousOrderIdsRef = useRef<Set<string>>(new Set());
@@ -610,6 +634,19 @@ export function KitchenDashboard({ historyOnly = false }: { historyOnly?: boolea
         </Card>
       ) : null}
 
+      {!historyOnly && !soundReady ? (
+        <button
+          type="button"
+          onClick={() => void enableSound()}
+          className="mb-4 flex w-full items-center justify-center gap-3 rounded-2xl bg-[var(--color-dark-green)] px-5 py-4 text-lg font-bold text-white shadow-float transition-transform active:scale-[0.99]"
+        >
+          <Bell className="h-6 w-6" />
+          {locale === "fr"
+            ? "Touchez ici pour activer le son des commandes"
+            : "Tap here to enable order sound"}
+        </button>
+      ) : null}
+
       {!historyOnly ? (
         <div className="mb-5 grid gap-4 xl:grid-cols-3">
           <Card>
@@ -622,7 +659,13 @@ export function KitchenDashboard({ historyOnly = false }: { historyOnly?: boolea
               <Button
                 type="button"
                 variant={preferences.soundEnabled ? "primary" : "secondary"}
-                onClick={() => setPreferences((current) => ({ ...current, soundEnabled: !current.soundEnabled }))}
+                onClick={() => {
+                  if (!preferences.soundEnabled) {
+                    void enableSound();
+                  } else {
+                    setPreferences((current) => ({ ...current, soundEnabled: false }));
+                  }
+                }}
               >
                 <Bell className="h-4 w-4" />
                 {preferences.soundEnabled ? settingsLabel.soundOn : settingsLabel.soundOff}
