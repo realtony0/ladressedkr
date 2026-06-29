@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import { Clock, Mail, MapPin } from "lucide-react";
 
 import { Card, CardTitle } from "@/components/common/card";
 import { PageShell } from "@/components/layout/page-shell";
@@ -47,9 +47,6 @@ export default function InfosRoute() {
           </a>
 
           <div className="mt-6 space-y-2">
-            <a href="tel:+221000000000" className="flex items-center gap-2 text-sm font-semibold text-[var(--color-dark-green)]">
-              <Phone className="h-4 w-4" /> +221 …
-            </a>
             <a
               href="mailto:ladresse.sn@outlook.fr"
               className="flex items-center gap-2 text-sm font-semibold text-[var(--color-dark-green)]"
