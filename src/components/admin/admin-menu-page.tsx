@@ -55,6 +55,10 @@ export function AdminMenuPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [editDrafts, setEditDrafts] = useState<Record<string, { nom: string; prix: string; description: string }>>({});
+  const [photoUploading, setPhotoUploading] = useState<Record<string, boolean>>({});
+
   const [categoryName, setCategoryName] = useState("");
   const [categoryOrder, setCategoryOrder] = useState("10");
 
@@ -261,6 +265,63 @@ export function AdminMenuPage() {
     }
     notifySuccess("Plat mis à jour");
     void loadData();
+  }
+
+  function startEditItem(item: MenuItem) {
+    setEditDrafts((current) => ({
+      ...current,
+      [item.id]: { nom: item.nom, prix: String(item.prix), description: item.description },
+    }));
+    setEditingItemId(item.id);
+  }
+
+  async function saveEditItem(item: MenuItem) {
+    const draft = editDrafts[item.id];
+    if (!draft) {
+      return;
+    }
+    const nom = draft.nom.trim();
+    const prix = Number(draft.prix);
+    if (!nom || !Number.isFinite(prix) || prix < 0) {
+      notifyError("Champs invalides", "Nom et prix obligatoires.");
+      return;
+    }
+    await updateItem(item.id, { nom, prix, description: draft.description.trim() });
+    setEditingItemId(null);
+  }
+
+  async function uploadItemPhoto(item: MenuItem, file: File) {
+    const supabase = getBrowserSupabase();
+    if (!supabase) {
+      return;
+    }
+    setPhotoUploading((current) => ({ ...current, [item.id]: true }));
+    try {
+      const ext = (file.name.split(".").pop() ?? "jpg").toLowerCase();
+      const path = `${item.id}-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("dish-photos")
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (uploadError) {
+        notifyError("Photo non envoyée", uploadError.message);
+        return;
+      }
+      const { data } = supabase.storage.from("dish-photos").getPublicUrl(path);
+      const publicUrl = data.publicUrl;
+      await updateItem(item.id, { photo: publicUrl });
+      notifySuccess("Photo mise à jour", item.nom);
+    } catch (uploadException) {
+      notifyError(
+        "Photo non envoyée",
+        uploadException instanceof Error ? uploadException.message : undefined,
+      );
+    } finally {
+      setPhotoUploading((current) => {
+        const next = { ...current };
+        delete next[item.id];
+        return next;
+      });
+    }
   }
 
   async function deleteItem(itemId: string) {
@@ -566,10 +627,104 @@ export function AdminMenuPage() {
                 <li key={item.id} className="rounded-xl border border-[var(--color-light-gray)] p-3">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-[var(--color-dark-green)]">{item.nom}</p>
-                      <p className="text-xs text-[var(--color-black)]/65">
-                        {formatCurrency(item.prix, locale)} · {categories.find((category) => category.id === item.categorie_id)?.nom}
-                      </p>
+                      <div className="flex items-start gap-3">
+                        {item.photo ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={item.photo}
+                            alt={item.nom}
+                            className="h-16 w-16 shrink-0 rounded-lg border border-[var(--color-light-gray)] object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-dashed border-[var(--color-light-gray)] text-center text-[10px] text-[var(--color-black)]/40">
+                            Aucune photo
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="font-semibold text-[var(--color-dark-green)]">{item.nom}</p>
+                          <p className="text-xs text-[var(--color-black)]/65">
+                            {formatCurrency(item.prix, locale)} · {categories.find((category) => category.id === item.categorie_id)?.nom}
+                          </p>
+                          <div className="mt-2 flex flex-wrap items-center gap-2">
+                            <label className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-[var(--color-sage)] bg-[var(--color-cream)] px-3 py-1 text-xs font-semibold text-[var(--color-dark-green)]">
+                              {photoUploading[item.id] ? "Envoi…" : item.photo ? "Changer la photo" : "Ajouter une photo"}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                disabled={Boolean(photoUploading[item.id])}
+                                onChange={(event) => {
+                                  const file = event.target.files?.[0];
+                                  if (file) {
+                                    void uploadItemPhoto(item, file);
+                                  }
+                                  event.target.value = "";
+                                }}
+                              />
+                            </label>
+                            <Button type="button" variant="secondary" onClick={() => startEditItem(item)}>
+                              Modifier
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {editingItemId === item.id ? (
+                        <form
+                          className="mt-3 space-y-2 rounded-xl bg-[var(--color-cream)] p-3"
+                          onSubmit={(event) => {
+                            event.preventDefault();
+                            void saveEditItem(item);
+                          }}
+                        >
+                          <div>
+                            <FieldLabel>Nom</FieldLabel>
+                            <TextInput
+                              value={editDrafts[item.id]?.nom ?? item.nom}
+                              onChange={(event) =>
+                                setEditDrafts((current) => ({
+                                  ...current,
+                                  [item.id]: { ...current[item.id], nom: event.target.value },
+                                }))
+                              }
+                              required
+                            />
+                          </div>
+                          <div>
+                            <FieldLabel>Prix (FCFA)</FieldLabel>
+                            <TextInput
+                              type="number"
+                              min={0}
+                              value={editDrafts[item.id]?.prix ?? String(item.prix)}
+                              onChange={(event) =>
+                                setEditDrafts((current) => ({
+                                  ...current,
+                                  [item.id]: { ...current[item.id], prix: event.target.value },
+                                }))
+                              }
+                              required
+                            />
+                          </div>
+                          <div>
+                            <FieldLabel>Description</FieldLabel>
+                            <TextInput
+                              value={editDrafts[item.id]?.description ?? item.description}
+                              onChange={(event) =>
+                                setEditDrafts((current) => ({
+                                  ...current,
+                                  [item.id]: { ...current[item.id], description: event.target.value },
+                                }))
+                              }
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <Button type="submit">{messages.common.save}</Button>
+                            <Button type="button" variant="ghost" onClick={() => setEditingItemId(null)}>
+                              {messages.common.cancel}
+                            </Button>
+                          </div>
+                        </form>
+                      ) : null}
                       <div className="mt-1 flex flex-wrap gap-2">
                         <Badge className={item.disponible ? "bg-[#e5f6e5] text-[#225222]" : "bg-[#ffe4e4] text-[#8b2424]"}>
                           {item.disponible ? "Disponible" : "Épuisé"}
