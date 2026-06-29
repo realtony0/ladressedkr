@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   BarChart3,
   BellRing,
+  CalendarCheck,
   Clock3,
   QrCode,
   Tag,
@@ -18,6 +19,12 @@ const TILES = [
     description: "Les commandes des clients qui arrivent, en temps réel.",
     icon: BellRing,
     accent: true,
+  },
+  {
+    href: "/admin/reservations",
+    label: "Réservations",
+    description: "Les demandes de réservation faites en ligne.",
+    icon: CalendarCheck,
   },
   {
     href: "/admin/menu",

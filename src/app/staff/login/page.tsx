@@ -85,6 +85,10 @@ export default function StaffLoginPage() {
   return (
     <PageShell title={messages.auth.title} subtitle={messages.auth.subtitle}>
       <Card className="mx-auto max-w-lg">
+        <div className="mb-4 flex justify-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/logo-mark.png" alt="L'Adresse Dakar" className="h-16 w-16 rounded-2xl" />
+        </div>
         <CardTitle className="font-heading text-3xl">{messages.auth.signin}</CardTitle>
         {!isSupabaseConfigured ? (
           <p className="mt-4 rounded-xl bg-[#fff7da] p-3 text-sm text-[#6b5608]">

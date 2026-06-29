@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
 
+import { Brand } from "@/components/layout/brand";
 import { LanguageToggle } from "@/components/common/language-toggle";
 import { useI18n } from "@/providers/i18n-provider";
 
@@ -32,9 +33,7 @@ export function TopNav() {
     return (
       <header className="sticky top-0 z-30 border-b border-[var(--color-light-gray)] bg-[var(--color-cream)]/95 backdrop-blur">
         <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-3 md:px-6">
-          <span className="min-w-0 font-logo text-xl leading-none text-[var(--color-dark-green)] sm:text-2xl">
-            L’Adresse Dakar
-          </span>
+          <Brand size="sm" />
           <LanguageToggle />
         </div>
       </header>
@@ -47,9 +46,7 @@ export function TopNav() {
     return (
       <header className="sticky top-0 z-30 border-b border-[var(--color-light-gray)] bg-[var(--color-cream)]/95 backdrop-blur">
         <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6">
-          <Link href="/admin" className="font-logo text-2xl text-[var(--color-dark-green)]">
-            L’Adresse Dakar
-          </Link>
+          <Brand href="/admin" />
 
           <nav className="flex flex-wrap items-center gap-2">
             {!onDashboard ? (
@@ -74,18 +71,41 @@ export function TopNav() {
     );
   }
 
-  // Public pages (home): logo + discreet team area link.
+  // Public vitrine pages: showcase nav + discreet team area link.
+  const vitrineLinks = [
+    { href: "/", label: "Accueil" },
+    { href: "/carte", label: "La carte" },
+    { href: "/reservation", label: "Réserver" },
+    { href: "/infos", label: "Infos" },
+  ];
+
+  function isActive(href: string) {
+    if (href === "/") return pathname === "/";
+    return pathname.startsWith(href);
+  }
+
   return (
     <header className="sticky top-0 z-30 border-b border-[var(--color-light-gray)] bg-[var(--color-cream)]/95 backdrop-blur">
       <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6">
-        <Link href="/" className="font-logo text-2xl text-[var(--color-dark-green)]">
-          L’Adresse Dakar
-        </Link>
+        <Brand href="/" />
 
-        <nav className="flex flex-wrap items-center gap-2">
+        <nav className="flex flex-wrap items-center gap-1.5">
+          {vitrineLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                isActive(link.href)
+                  ? "bg-[var(--color-dark-green)] text-white"
+                  : "bg-white text-[var(--color-dark-green)] hover:bg-[var(--color-light-gray)]"
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
           <Link
             href="/staff/login"
-            className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-[var(--color-dark-green)] transition-colors hover:bg-[var(--color-light-gray)]"
+            className="rounded-full px-3 py-1.5 text-xs font-semibold text-[var(--color-black)]/50 transition-colors hover:text-[var(--color-dark-green)]"
           >
             {messages.nav.staffArea}
           </Link>
