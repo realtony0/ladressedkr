@@ -14,7 +14,7 @@ import {
   extractTableAccessTokenFromQrCode,
 } from "@/lib/helpers/table-access";
 import { getBrowserSupabase } from "@/lib/supabase/browser";
-import { APP_URL, DEFAULT_RESTAURANT_ID } from "@/lib/supabase/env";
+import { APP_URL, DEFAULT_RESTAURANT_ID, QR_BASE_URL } from "@/lib/supabase/env";
 import { useI18n } from "@/providers/i18n-provider";
 import { useNotifications } from "@/providers/notifications-provider";
 import type { Table } from "@/types/domain";
@@ -35,6 +35,11 @@ export function AdminTablesPage() {
   const [success, setSuccess] = useState<string | null>(null);
 
   const currentBaseUrl = useCallback(() => {
+    // A dedicated, owned QR domain always wins so printed codes stay valid forever.
+    if (QR_BASE_URL) {
+      return QR_BASE_URL.replace(/\/+$/, "");
+    }
+
     const configuredBaseUrl = APP_URL.trim().replace(/\/+$/, "");
     const hasConfiguredPublicHost =
       configuredBaseUrl.length > 0 &&
@@ -276,42 +281,79 @@ export function AdminTablesPage() {
     void loadTables();
   }
 
-  function printQr(table: TableRow) {
-    if (!table.qr_data_url) {
-      return;
-    }
+  function posterStyles() {
+    return `
+      @page { size: A4; margin: 0; }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: Georgia, 'Times New Roman', serif; color: #1a1a1a; }
+      .poster {
+        width: 100%; min-height: 100vh; padding: 48px 40px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        text-align: center; page-break-after: always;
+      }
+      .poster:last-child { page-break-after: auto; }
+      .logo { width: 96px; height: 96px; border-radius: 18px; }
+      .brand { margin-top: 16px; font-size: 26px; letter-spacing: 1px; color: #2d4a2d; }
+      .table { margin: 6px 0 26px; font-size: 44px; font-weight: bold; color: #2d4a2d; }
+      .qrbox { padding: 18px; border: 2px solid #e7e2d6; border-radius: 20px; }
+      .qr { width: 320px; height: 320px; display: block; }
+      .cta { margin-top: 26px; font-size: 22px; color: #1a1a1a; }
+      .url { margin-top: 12px; font-family: Arial, sans-serif; font-size: 14px; color: #9a9a9a; }
+    `;
+  }
 
-    const popup = window.open("", "_blank", "width=420,height=560");
+  async function printPosters(rows: TableRow[]) {
+    const popup = window.open("", "_blank");
     if (!popup) {
-      notifyError("Impression bloquée", "Autorise les popups pour imprimer le QR.");
+      notifyError("Impression bloquée", "Autorise les popups pour imprimer les QR.");
       return;
     }
 
-    const accessToken = table.access_token ?? extractTableAccessTokenFromQrCode(table.qr_code) ?? undefined;
-    const targetUrl = table.qr_code || tableQrUrl(table.numero, accessToken);
+    popup.document.write(
+      "<html><body style=\"font-family:sans-serif;padding:32px;text-align:center\">Génération des affiches…</body></html>",
+    );
 
-    popup.document.write(`
-      <html>
-        <head>
-          <title>QR Table ${table.numero}</title>
-          <style>
-            body { font-family: sans-serif; text-align: center; padding: 24px; }
-            img { width: 260px; height: 260px; }
-          </style>
-        </head>
-        <body>
-          <h1>L'Adresse Dakar</h1>
-          <h2>Table ${table.numero}</h2>
-          <img src="${table.qr_data_url}" alt="QR table ${table.numero}" />
-          <p>${targetUrl}</p>
-        </body>
-      </html>
-    `);
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const toPrint = rows.filter((table) => table.statut === "active");
 
+    const posters = await Promise.all(
+      toPrint.map(async (table) => {
+        const accessToken = table.access_token ?? extractTableAccessTokenFromQrCode(table.qr_code) ?? undefined;
+        const targetUrl = table.qr_code || tableQrUrl(table.numero, accessToken);
+        const qr = await QRCode.toDataURL(targetUrl, {
+          margin: 1,
+          width: 640,
+          color: { dark: "#1A1A1A", light: "#FFFFFF" },
+        });
+        const display = targetUrl.replace(/^https?:\/\//, "");
+        return { numero: table.numero, qr, display };
+      }),
+    );
+
+    const body = posters
+      .map(
+        (poster) => `
+        <div class="poster">
+          <img class="logo" src="${origin}/brand/logo-mark.png" alt="L'Adresse Dakar" />
+          <div class="brand">L'Adresse Dakar</div>
+          <div class="table">Table ${poster.numero}</div>
+          <div class="qrbox"><img class="qr" src="${poster.qr}" alt="QR table ${poster.numero}" /></div>
+          <div class="cta">Scannez pour voir le menu<br/>et commander</div>
+          <div class="url">${poster.display}</div>
+        </div>`,
+      )
+      .join("");
+
+    popup.document.open();
+    popup.document.write(`<html><head><title>Affiches QR — L'Adresse Dakar</title><style>${posterStyles()}</style></head><body>${body}</body></html>`);
     popup.document.close();
     popup.focus();
-    popup.print();
-    notifyInfo("Impression lancée", `Table ${table.numero}`);
+    window.setTimeout(() => popup.print(), 400);
+    notifyInfo("Impression prête", `${posters.length} affiche(s)`);
+  }
+
+  function printQr(table: TableRow) {
+    void printPosters([table]);
   }
 
   return (
@@ -340,7 +382,17 @@ export function AdminTablesPage() {
         </Card>
 
         <Card>
-          <CardTitle className="font-heading text-3xl">Tables</CardTitle>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <CardTitle className="font-heading text-3xl">Tables</CardTitle>
+            {tables.some((table) => table.statut === "active") ? (
+              <Button type="button" onClick={() => void printPosters(tables)}>
+                Imprimer toutes les affiches
+              </Button>
+            ) : null}
+          </div>
+          <p className="mt-1 text-sm text-[var(--color-black)]/60">
+            Une affiche par table (logo + QR), prête à imprimer et poser sur les tables.
+          </p>
           {loading ? (
             <p className="mt-3 text-sm">{messages.common.loading}</p>
           ) : (
