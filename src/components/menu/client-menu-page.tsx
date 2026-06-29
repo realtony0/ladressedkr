@@ -579,7 +579,7 @@ function MenuBoard({ tableId }: { tableId: string }) {
             return (
               <section key={section.category.id} id={`cat-${section.category.id}`} className="scroll-mt-28 space-y-3">
                 <h2 className="font-title text-2xl text-[var(--color-dark-green)]">{section.category.nom}</h2>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                   {section.items.map((item) => (
                     <MenuItemCard
                       key={item.id}

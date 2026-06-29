@@ -8,7 +8,7 @@ import { Button } from "@/components/common/button";
 import { Badge, Card } from "@/components/common/card";
 import { FieldLabel, Select, TextInput } from "@/components/common/field";
 import { PageShell } from "@/components/layout/page-shell";
-import { DEFAULT_DELAY_ALERT_MINUTES, ORDER_STATUS_FLOW } from "@/lib/helpers/constants";
+import { DEFAULT_DELAY_ALERT_MINUTES } from "@/lib/helpers/constants";
 import { cn } from "@/lib/helpers/cn";
 import { formatCurrency, formatDateTime, orderStatusLabel, serverCallReasonLabel } from "@/lib/helpers/format";
 import { isAudioUnlocked, playNotificationTone, unlockAudio } from "@/lib/helpers/sound";
@@ -91,7 +91,6 @@ export function KitchenDashboard({ historyOnly = false }: { historyOnly?: boolea
   const [error, setError] = useState<string | null>(null);
   const [printOrderId, setPrintOrderId] = useState<string | null>(null);
   const [preferences, setPreferences] = useState<KitchenPreferences>(DEFAULT_KITCHEN_PREFERENCES);
-  const [etaDrafts, setEtaDrafts] = useState<Record<string, string>>({});
   const [newOrderIds, setNewOrderIds] = useState<string[]>([]);
   const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
   const [soundReady, setSoundReady] = useState(false);
@@ -512,38 +511,6 @@ export function KitchenDashboard({ historyOnly = false }: { historyOnly?: boolea
     void loadData({ silent: true });
   }
 
-  async function updateEta(orderId: string, eta: number) {
-    const supabase = getBrowserSupabase();
-    if (!supabase) {
-      return;
-    }
-
-    const normalizedEta = clamp(Math.round(eta), 0, 180);
-    const { error: updateError } = await supabase
-      .from("orders")
-      .update({ eta_minutes: normalizedEta })
-      .eq("id", orderId)
-      .eq("restaurant_id", DEFAULT_RESTAURANT_ID);
-
-    if (updateError) {
-      setError(updateError.message);
-      notifyError(locale === "fr" ? "ETA non mis à jour" : "ETA not updated", updateError.message);
-      return;
-    }
-
-    setError(null);
-    notifySuccess(
-      locale === "fr" ? "ETA mis à jour" : "ETA updated",
-      `${locale === "fr" ? "Commande" : "Order"} #${orderId.slice(0, 8)} · ${normalizedEta} min`,
-    );
-    setEtaDrafts((current) => {
-      const next = { ...current };
-      delete next[orderId];
-      return next;
-    });
-    void loadData({ silent: true });
-  }
-
   async function markItemOutOfStock() {
     const supabase = getBrowserSupabase();
     if (!supabase || !selectedItemOut) {
@@ -795,130 +762,122 @@ export function KitchenDashboard({ historyOnly = false }: { historyOnly?: boolea
       {loading && orders.length === 0 ? (
         <Card>{messages.common.loading}</Card>
       ) : orders.length === 0 ? (
-        <Card>{messages.kitchen.noOrders}</Card>
+        <Card className="py-12 text-center text-lg text-[var(--color-black)]/55">{messages.kitchen.noOrders}</Card>
       ) : (
-        <div className="space-y-4">
+        <div className="grid gap-4 lg:grid-cols-2">
           {orders.map((order) => {
             const elapsed = delayInMinutes(order.heure);
-            const isDelayed = !historyOnly && order.statut !== "ready" && elapsed >= preferences.delayAlertMinutes;
             const isNewOrder = newOrderIds.includes(order.id);
-            const etaValue =
-              etaDrafts[order.id] ??
-              String(
-                Number.isFinite(order.eta_minutes ?? NaN)
-                  ? order.eta_minutes
-                  : suggestedEtaMinutes(order, preferences.defaultEtaMinutes),
-              );
+            const warn = preferences.delayAlertMinutes;
+            const isDelayed = !historyOnly && order.statut !== "ready" && elapsed >= warn;
+
+            const timerClass =
+              elapsed >= warn
+                ? "bg-[#fdecec] text-[#9C3D3D]"
+                : elapsed >= warn * 0.6
+                  ? "bg-[#fff4e0] text-[#8a5a12]"
+                  : "bg-[#e9f4ea] text-[#225222]";
+
+            const accentClass =
+              order.statut === "received"
+                ? "border-l-[6px] border-l-[var(--color-gold)]"
+                : order.statut === "preparing"
+                  ? "border-l-[6px] border-l-[var(--color-sage)]"
+                  : "border-l-[6px] border-l-[var(--color-dark-green)]";
+
+            const next: OrderStatus | null =
+              order.statut === "received" ? "preparing" : order.statut === "preparing" ? "ready" : null;
+            const nextLabel =
+              next === "preparing"
+                ? locale === "fr"
+                  ? "Commencer la préparation"
+                  : "Start preparing"
+                : next === "ready"
+                  ? locale === "fr"
+                    ? "Marquer prête"
+                    : "Mark ready"
+                  : "";
 
             return (
               <Card
                 key={order.id}
                 className={cn(
-                  isDelayed ? "border-[#9C3D3D]" : undefined,
-                  isNewOrder ? "ring-2 ring-[var(--color-gold)]" : undefined,
+                  "flex flex-col",
+                  accentClass,
+                  isDelayed && "ring-2 ring-[#9C3D3D]",
+                  isNewOrder && "ring-2 ring-[var(--color-gold)]",
                 )}
               >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <h3 className="font-heading text-2xl text-[var(--color-dark-green)]">
-                      Commande #{order.id.slice(0, 8)} · Table {order.table?.numero ?? "-"}
-                    </h3>
-                    <p className="text-xs text-[var(--color-black)]/65">{formatDateTime(order.heure, locale)}</p>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-heading text-4xl leading-none text-[var(--color-dark-green)]">
+                      Table {order.table?.numero ?? "-"}
+                    </p>
+                    <p className="mt-1.5 text-xs text-[var(--color-black)]/50">
+                      #{order.id.slice(0, 8)} · {formatDateTime(order.heure, locale)}
+                    </p>
                   </div>
-
-                  <div className="text-right">
-                    <div className="flex flex-wrap justify-end gap-2">
-                      <Badge>{orderStatusLabel(order.statut, locale)}</Badge>
-                      {isNewOrder ? <Badge className="bg-[#fdf2d5] text-[#7b5a12]">{settingsLabel.newOrder}</Badge> : null}
-                    </div>
-                    <p className="mt-1 text-lg font-bold text-[var(--color-dark-green)]">{formatCurrency(order.total, locale)}</p>
-                    <p className="mt-1 inline-flex items-center gap-1 text-xs text-[var(--color-black)]/70">
-                      <Clock3 className="h-3.5 w-3.5" />
-                      {settingsLabel.elapsed}: {elapsed} min
+                  <div className="shrink-0 text-right">
+                    <span className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-base font-bold", timerClass)}>
+                      <Clock3 className="h-4 w-4" /> {elapsed} min
+                    </span>
+                    <p className="mt-1.5 text-sm font-bold text-[var(--color-dark-green)]">
+                      {orderStatusLabel(order.statut, locale)}
                     </p>
                     {order.eta_minutes ? (
-                      <p className="text-xs font-semibold text-[var(--color-dark-green)]">
-                        {settingsLabel.etaLabel}: {order.eta_minutes} min
-                      </p>
-                    ) : null}
-                    {isDelayed ? (
-                      <p className="text-xs font-bold text-[#9C3D3D]">
-                        {messages.kitchen.delayed} · {settingsLabel.lateBy} +{elapsed - preferences.delayAlertMinutes} min
-                      </p>
+                      <p className="text-xs text-[var(--color-black)]/50">ETA {order.eta_minutes} min</p>
                     ) : null}
                   </div>
                 </div>
 
-                <ul className="mt-4 space-y-2">
+                <ul className="mt-4 flex-1 space-y-2">
                   {order.order_items.map((line) => (
-                    <li key={line.id} className="rounded-xl border border-[var(--color-light-gray)] p-2 text-sm">
-                      <p className="font-semibold text-[var(--color-dark-green)]">
+                    <li key={line.id} className="rounded-xl bg-[#f6f8f6] p-3">
+                      <p className="text-lg font-bold leading-tight text-[var(--color-dark-green)]">
                         {line.quantite} × {line.item?.nom ?? "Plat supprimé"}
                       </p>
-                      {line.pizza_size?.taille ? <p className="text-xs text-[var(--color-black)]/65">Format: {line.pizza_size.taille}</p> : null}
-                      {line.accompaniment?.nom ? (
-                        <p className="text-xs text-[var(--color-black)]/65">Accompagnement: {line.accompaniment.nom}</p>
+                      {line.pizza_size?.taille ? (
+                        <p className="text-sm text-[var(--color-black)]/65">Format : {line.pizza_size.taille}</p>
                       ) : null}
-                      {line.note ? <p className="text-xs text-[var(--color-black)]/65">Note: {line.note}</p> : null}
+                      {line.accompaniment?.nom ? (
+                        <p className="text-sm text-[var(--color-black)]/65">Accompagnement : {line.accompaniment.nom}</p>
+                      ) : null}
+                      {line.note ? (
+                        <p className="mt-0.5 text-sm font-semibold text-[#8a5a12]">📝 {line.note}</p>
+                      ) : null}
                     </li>
                   ))}
                 </ul>
 
                 {!historyOnly ? (
-                  <div className="mt-4 grid gap-3 md:grid-cols-[1fr_120px_auto_auto] md:items-end">
-                    <div>
-                      <FieldLabel>{messages.kitchen.updateStatus}</FieldLabel>
-                      <Select value={order.statut} onChange={(event) => void setStatus(order, event.target.value as OrderStatus)}>
-                        {ORDER_STATUS_FLOW.map((status) => (
-                          <option key={status} value={status}>
-                            {orderStatusLabel(status, locale)}
-                          </option>
-                        ))}
-                      </Select>
-                    </div>
-
-                    <div>
-                      <FieldLabel>{messages.kitchen.etaMinutes}</FieldLabel>
-                      <TextInput
-                        type="number"
-                        min={0}
-                        max={180}
-                        value={etaValue}
-                        onChange={(event) =>
-                          setEtaDrafts((current) => ({
-                            ...current,
-                            [order.id]: event.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() =>
-                        void updateEta(
-                          order.id,
-                          Number(
-                            etaDrafts[order.id] ??
-                              order.eta_minutes ??
-                              suggestedEtaMinutes(order, preferences.defaultEtaMinutes),
-                          ),
-                        )
-                      }
-                    >
-                      {settingsLabel.applyEta}
-                    </Button>
-
-                    <Button type="button" variant="ghost" onClick={() => void updateEta(order.id, suggestedEtaMinutes(order, preferences.defaultEtaMinutes))}>
-                      {settingsLabel.autoEta}
-                    </Button>
-
-                    <div className="md:col-span-4">
-                      <Button type="button" variant="secondary" onClick={() => triggerPrint(order.id)}>
-                        <Printer className="h-4 w-4" />
-                        {messages.kitchen.printTicket}
-                      </Button>
+                  <div className="mt-4 space-y-2">
+                    {next ? (
+                      <button
+                        type="button"
+                        onClick={() => void setStatus(order, next)}
+                        className="w-full rounded-2xl bg-[var(--color-dark-green)] px-5 py-4 text-xl font-bold text-white shadow-card transition-transform active:scale-[0.99]"
+                      >
+                        {nextLabel} →
+                      </button>
+                    ) : null}
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => triggerPrint(order.id)}
+                        className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-[var(--color-light-gray)] px-3 py-2.5 text-sm font-semibold text-[var(--color-dark-green)]"
+                      >
+                        <Printer className="h-4 w-4" /> {messages.kitchen.printTicket}
+                      </button>
+                      {order.statut === "preparing" ? (
+                        <button
+                          type="button"
+                          onClick={() => void setStatus(order, "received")}
+                          className="rounded-xl border border-[var(--color-light-gray)] px-4 py-2.5 text-sm font-semibold text-[var(--color-black)]/55"
+                          title={locale === "fr" ? "Revenir à Reçue" : "Back to received"}
+                        >
+                          ↩︎
+                        </button>
+                      ) : null}
                     </div>
                   </div>
                 ) : null}

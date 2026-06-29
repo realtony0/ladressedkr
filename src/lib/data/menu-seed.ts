@@ -158,7 +158,7 @@ const baseItems: Array<Omit<MenuItem, "restaurant_id">> = [
     id: "item-tartare-saumon",
     nom: "Tartare de Saumon",
     description: "Saumon cru citronné finement taillé, touche d'huile d'olive.",
-    prix: 7000,
+    prix: 8500,
     photo: "https://images.unsplash.com/photo-1656106577512-0259bf5b9fd6?auto=format&fit=crop&w=800&q=70",
     categorie_id: "cat-entrees",
     subcategorie_id: null,
