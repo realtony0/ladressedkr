@@ -71,12 +71,19 @@ export function AdminTablesPage() {
     [currentBaseUrl],
   );
 
+  const canonicalTableQrUrl = useCallback(
+    (table: Pick<Table, "numero" | "qr_code" | "access_token">) => {
+      const accessToken = table.access_token ?? extractTableAccessTokenFromQrCode(table.qr_code) ?? undefined;
+      return tableQrUrl(table.numero, accessToken);
+    },
+    [tableQrUrl],
+  );
+
   const withQrImages = useCallback(
     async (rows: Table[]) =>
       Promise.all(
       rows.map(async (table) => {
-        const accessToken = table.access_token ?? extractTableAccessTokenFromQrCode(table.qr_code) ?? undefined;
-        const url = table.qr_code || tableQrUrl(table.numero, accessToken);
+        const url = canonicalTableQrUrl(table);
         const qr_data_url = await QRCode.toDataURL(url, {
           margin: 1,
           width: 220,
@@ -92,7 +99,7 @@ export function AdminTablesPage() {
         } satisfies TableRow;
       }),
     ),
-    [tableQrUrl],
+    [canonicalTableQrUrl],
   );
 
   const loadTables = useCallback(async () => {
@@ -318,8 +325,7 @@ export function AdminTablesPage() {
 
     const posters = await Promise.all(
       toPrint.map(async (table) => {
-        const accessToken = table.access_token ?? extractTableAccessTokenFromQrCode(table.qr_code) ?? undefined;
-        const targetUrl = table.qr_code || tableQrUrl(table.numero, accessToken);
+        const targetUrl = canonicalTableQrUrl(table);
         const qr = await QRCode.toDataURL(targetUrl, {
           margin: 1,
           width: 640,
@@ -403,11 +409,7 @@ export function AdminTablesPage() {
                     <div>
                       <p className="font-semibold text-[var(--color-dark-green)]">Table {table.numero}</p>
                       <p className="text-xs text-[var(--color-black)]/65">
-                        {table.qr_code ||
-                          tableQrUrl(
-                            table.numero,
-                            table.access_token ?? extractTableAccessTokenFromQrCode(table.qr_code) ?? undefined,
-                          )}
+                        {canonicalTableQrUrl(table)}
                       </p>
                       <p
                         className={`mt-1 text-xs font-semibold ${
