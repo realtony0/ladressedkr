@@ -118,7 +118,7 @@ export function MenuItemCard({
   }, [open]);
 
   const media = CATEGORY_MEDIA[categorySlug] ?? CATEGORY_MEDIA["entrees-salades"];
-  const showPhoto = Boolean(item.photo) && !DRINK_CATEGORY_SLUGS.includes(categorySlug);
+  const photoSrc = !DRINK_CATEGORY_SLUGS.includes(categorySlug) ? (item.photo ?? undefined) : undefined;
 
   function emitAdd() {
     for (let i = 0; i < Math.max(1, quantity); i += 1) {
@@ -163,9 +163,9 @@ export function MenuItemCard({
 
   const Media = (
     <div className="dish-media relative h-full w-full">
-      {showPhoto ? (
+      {photoSrc ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={item.photo} alt={item.nom} loading="lazy" className="h-full w-full object-cover" />
+        <img src={photoSrc} alt={item.nom} loading="lazy" className="h-full w-full object-cover" />
       ) : (
         <div className={cn("flex h-full w-full items-center justify-center bg-gradient-to-br", media.gradient)}>
           <span className="text-4xl drop-shadow-sm" aria-hidden>
@@ -245,9 +245,9 @@ export function MenuItemCard({
           />
           <div className="animate-rise-in relative z-10 max-h-[88vh] w-full overflow-y-auto rounded-t-3xl bg-white sm:max-w-md sm:rounded-3xl">
             <div className="relative h-64 sm:h-72">
-              {showPhoto ? (
+              {photoSrc ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={item.photo} alt={item.nom} className="h-full w-full object-cover" />
+                <img src={photoSrc} alt={item.nom} className="h-full w-full object-cover" />
               ) : (
                 <div className={cn("flex h-full w-full items-center justify-center bg-gradient-to-br", media.gradient)}>
                   <span className="text-6xl" aria-hidden>
