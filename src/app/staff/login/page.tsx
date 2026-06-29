@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/common/button";
@@ -9,9 +8,7 @@ import { Card, CardTitle } from "@/components/common/card";
 import { FieldLabel, TextInput } from "@/components/common/field";
 import { PageShell } from "@/components/layout/page-shell";
 import { routeForRole } from "@/lib/helpers/auth";
-import { PRIMARY_ADMIN_EMAIL } from "@/lib/helpers/staff-access";
 import { getBrowserSupabase } from "@/lib/supabase/browser";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { useI18n } from "@/providers/i18n-provider";
 import { useNotifications } from "@/providers/notifications-provider";
 import type { Role } from "@/types/domain";
@@ -21,7 +18,7 @@ export default function StaffLoginPage() {
   const { messages } = useI18n();
   const { notifyError, notifySuccess } = useNotifications();
 
-  const [email, setEmail] = useState(PRIMARY_ADMIN_EMAIL);
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -90,21 +87,6 @@ export default function StaffLoginPage() {
           <img src="/brand/logo-mark.png" alt="L'Adresse Dakar" className="h-16 w-16 rounded-2xl" />
         </div>
         <CardTitle className="font-heading text-3xl">{messages.auth.signin}</CardTitle>
-        {!isSupabaseConfigured ? (
-          <p className="mt-4 rounded-xl bg-[#fff7da] p-3 text-sm text-[#6b5608]">
-            Variables d&apos;environnement Supabase manquantes. Le mode démo public reste disponible pour la partie client.
-          </p>
-        ) : null}
-        <p className="mt-3 rounded-xl bg-[#eef5ee] p-3 text-xs text-[#234223]">
-          Accès admin principal configuré: <strong>{PRIMARY_ADMIN_EMAIL}</strong>
-        </p>
-        <p className="mt-2 text-xs text-[var(--color-black)]/70">
-          Première installation:{" "}
-          <Link href="/staff/setup-admin" className="font-semibold text-[var(--color-dark-green)] underline">
-            configurer l&apos;admin depuis le site
-          </Link>
-          .
-        </p>
 
         <form className="mt-5 space-y-4" onSubmit={onSubmit}>
           <div>
