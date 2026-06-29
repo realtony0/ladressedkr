@@ -4,6 +4,7 @@ import {
   BellRing,
   CalendarCheck,
   Clock3,
+  ImagePlus,
   QrCode,
   Tag,
   UsersRound,
@@ -61,6 +62,12 @@ const TILES = [
     label: "Rapports & chiffre d'affaires",
     description: "Voir les ventes et exporter les rapports.",
     icon: BarChart3,
+  },
+  {
+    href: "/admin/photos",
+    label: "Photos des plats",
+    description: "Uploader toutes les photos en une seule fois.",
+    icon: ImagePlus,
   },
 ];
 
