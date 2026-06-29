@@ -33,12 +33,12 @@ export default function InfosRoute() {
             <MapPin className="h-5 w-5" /> Nous trouver
           </CardTitle>
           <p className="mt-4 text-sm text-[var(--color-black)]/75">
-            Corniche Ouest
+            Rond-point Ngor
             <br />
             Dakar, Sénégal
           </p>
           <a
-            href="https://www.google.com/maps/search/?api=1&query=Corniche+Ouest+Dakar"
+            href="https://www.google.com/maps/search/?api=1&query=Rond-point+Ngor+Dakar"
             target="_blank"
             rel="noopener noreferrer"
             className="mt-4 inline-block rounded-full border border-[var(--color-light-gray)] px-5 py-2 text-sm font-semibold text-[var(--color-dark-green)]"

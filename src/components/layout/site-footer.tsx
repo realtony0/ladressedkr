@@ -15,7 +15,7 @@ export function SiteFooter() {
           <div>
             <p className="text-sm font-bold uppercase tracking-wide text-white">Notre adresse</p>
             <ul className="mt-4 space-y-2 text-sm text-white/70">
-              <li>Corniche Ouest</li>
+              <li>Rond-point Ngor</li>
               <li>Dakar, Sénégal</li>
             </ul>
           </div>
