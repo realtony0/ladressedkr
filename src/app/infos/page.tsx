@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Clock, Mail, MapPin } from "lucide-react";
+import { Clock, Instagram, Mail, MapPin, Phone } from "lucide-react";
 
 import { Card, CardTitle } from "@/components/common/card";
 import { PageShell } from "@/components/layout/page-shell";
@@ -47,6 +47,20 @@ export default function InfosRoute() {
           </a>
 
           <div className="mt-6 space-y-2">
+            <a
+              href="tel:+221774392199"
+              className="flex items-center gap-2 text-sm font-semibold text-[var(--color-dark-green)]"
+            >
+              <Phone className="h-4 w-4" /> +221 77 439 21 99
+            </a>
+            <a
+              href="https://www.instagram.com/ladresse.lounge.dkr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm font-semibold text-[var(--color-dark-green)]"
+            >
+              <Instagram className="h-4 w-4" /> @ladresse.lounge.dkr
+            </a>
             <a
               href="mailto:ladresse.sn@outlook.fr"
               className="flex items-center gap-2 text-sm font-semibold text-[var(--color-dark-green)]"

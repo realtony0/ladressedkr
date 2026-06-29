@@ -24,6 +24,21 @@ export function SiteFooter() {
             <p className="text-sm font-bold uppercase tracking-wide text-white">Contact</p>
             <ul className="mt-4 space-y-2 text-sm text-white/70">
               <li>
+                <a href="tel:+221774392199" className="hover:text-white">
+                  +221 77 439 21 99
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://www.instagram.com/ladresse.lounge.dkr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white"
+                >
+                  @ladresse.lounge.dkr
+                </a>
+              </li>
+              <li>
                 <a href="mailto:ladresse.sn@outlook.fr" className="hover:text-white">
                   ladresse.sn@outlook.fr
                 </a>
