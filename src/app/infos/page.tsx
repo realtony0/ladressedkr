@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import { Clock, Mail, MapPin } from "lucide-react";
 
 import { Card, CardTitle } from "@/components/common/card";
 import { PageShell } from "@/components/layout/page-shell";
@@ -33,12 +33,12 @@ export default function InfosRoute() {
             <MapPin className="h-5 w-5" /> Nous trouver
           </CardTitle>
           <p className="mt-4 text-sm text-[var(--color-black)]/75">
-            Corniche Ouest
+            Rond-point Ngor
             <br />
             Dakar, Sénégal
           </p>
           <a
-            href="https://www.google.com/maps/search/?api=1&query=Corniche+Ouest+Dakar"
+            href="https://www.google.com/maps/search/?api=1&query=Rond-point+Ngor+Dakar"
             target="_blank"
             rel="noopener noreferrer"
             className="mt-4 inline-block rounded-full border border-[var(--color-light-gray)] px-5 py-2 text-sm font-semibold text-[var(--color-dark-green)]"
@@ -47,9 +47,6 @@ export default function InfosRoute() {
           </a>
 
           <div className="mt-6 space-y-2">
-            <a href="tel:+221000000000" className="flex items-center gap-2 text-sm font-semibold text-[var(--color-dark-green)]">
-              <Phone className="h-4 w-4" /> +221 …
-            </a>
             <a
               href="mailto:ladresse.sn@outlook.fr"
               className="flex items-center gap-2 text-sm font-semibold text-[var(--color-dark-green)]"

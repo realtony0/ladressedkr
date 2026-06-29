@@ -168,8 +168,10 @@ export function CartProvider({
   tableNumber: string;
   children: React.ReactNode;
 }) {
-  const [lines, setLines] = useState<CartLine[]>(() => readCartLines(tableNumber));
-  const [isReady, setIsReady] = useState(() => typeof window !== "undefined");
+  // Start empty on both server and the client's first (hydration) render so the
+  // markup matches; the cart is loaded from localStorage in the effect below.
+  const [lines, setLines] = useState<CartLine[]>([]);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     setIsReady(false);

@@ -8,10 +8,16 @@ import { NotificationsProvider } from "@/providers/notifications-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "L'Adresse Dakar | Gestion Restaurant",
-  description: "Plateforme complète de gestion restaurant pour L'Adresse Dakar.",
+  title: "L'Adresse Dakar — Restaurant à Dakar | Menu & Réservation",
+  description:
+    "L'Adresse Dakar, cuisine élégante entre esprit bistro parisien et fraîcheur africaine, au rond-point Ngor. Consultez la carte et réservez votre table en ligne.",
   applicationName: "L'Adresse Dakar",
   manifest: "/manifest.webmanifest",
+  openGraph: {
+    title: "L'Adresse Dakar",
+    description: "Plus qu'une table, une expérience. Rond-point Ngor, Dakar.",
+    type: "website",
+  },
 };
 
 export const viewport: Viewport = {

@@ -542,7 +542,7 @@ VALUES (
   '8f7c1bf8-feb5-4f34-88fb-781f2fd89d55',
   'L''Adresse Dakar',
   NULL,
-  'Corniche Ouest, Dakar'
+  'Rond-point Ngor, Dakar'
 )
 ON CONFLICT (id) DO UPDATE SET
   nom = EXCLUDED.nom,

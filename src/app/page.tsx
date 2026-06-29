@@ -19,8 +19,8 @@ const HIGHLIGHTS = [
   },
   {
     icon: MapPin,
-    title: "Corniche Ouest",
-    text: "Au cœur de Dakar, face à l'océan.",
+    title: "Rond-point Ngor",
+    text: "Au cœur de Dakar, à Ngor.",
   },
 ];
 
@@ -46,7 +46,7 @@ export default function Home() {
           </h1>
           <p className="mt-5 max-w-xl text-base text-white/85 md:text-lg">
             Cuisine élégante entre esprit bistro parisien et fraîcheur africaine,
-            sur la Corniche Ouest.
+            au rond-point Ngor, Dakar.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
