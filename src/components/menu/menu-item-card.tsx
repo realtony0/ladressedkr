@@ -29,6 +29,17 @@ interface MenuItemCardProps {
   }) => void;
 }
 
+const DRINK_SLUGS = new Set<CategorySlug>([
+  "cocktails-sans-alcool",
+  "smoothies",
+  "cocktails-glaces",
+  "milkshakes",
+  "boissons-chaudes",
+  "sodas-jus",
+  "eaux",
+  "chicha",
+]);
+
 // Visual identity per category — appetizing fallback band when a dish has no photo.
 const CATEGORY_MEDIA: Record<CategorySlug, { emoji: string; gradient: string }> = {
   "entrees-salades": { emoji: "🥗", gradient: "from-[#a7c79a] to-[#6f9c6f]" },
@@ -46,6 +57,7 @@ const CATEGORY_MEDIA: Record<CategorySlug, { emoji: string; gradient: string }> 
   "sodas-jus": { emoji: "🧃", gradient: "from-[#f0c068] to-[#d69020]" },
   eaux: { emoji: "💧", gradient: "from-[#a8d0e0] to-[#5e9cb8]" },
   brunch: { emoji: "🥞", gradient: "from-[#e6c98f] to-[#c79a4c]" },
+  chicha: { emoji: "💨", gradient: "from-[#b8a0c8] to-[#7a5a9c]" },
 };
 
 export function MenuItemCard({
@@ -150,11 +162,13 @@ export function MenuItemCard({
     setJustAdded(true);
   }
 
+  const isDrink = DRINK_SLUGS.has(categorySlug);
+
   const Media = (
     <div className="dish-media relative">
-      {item.photo ? (
+      {item.photo && !isDrink ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={item.photo} alt={item.nom} loading="lazy" className="h-full w-full object-cover" />
+        <img src={item.photo} alt={item.nom} loading="lazy" className="h-full w-full object-contain" />
       ) : (
         <div className={cn("flex h-full w-full items-center justify-center bg-gradient-to-br", media.gradient)}>
           <span className="text-4xl drop-shadow-sm" aria-hidden>
@@ -225,9 +239,9 @@ export function MenuItemCard({
           />
           <div className="animate-rise-in relative z-10 max-h-[88vh] w-full overflow-y-auto rounded-t-3xl bg-white sm:max-w-md sm:rounded-3xl">
             <div className="relative h-44">
-              {item.photo ? (
+              {item.photo && !isDrink ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={item.photo} alt={item.nom} className="h-full w-full object-cover" />
+                <img src={item.photo} alt={item.nom} className="h-full w-full object-contain" />
               ) : (
                 <div className={cn("flex h-full w-full items-center justify-center bg-gradient-to-br", media.gradient)}>
                   <span className="text-6xl" aria-hidden>

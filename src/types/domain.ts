@@ -39,7 +39,8 @@ export type CategorySlug =
   | "boissons-chaudes"
   | "sodas-jus"
   | "eaux"
-  | "brunch";
+  | "brunch"
+  | "chicha";
 
 export interface Restaurant {
   id: string;

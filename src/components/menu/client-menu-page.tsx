@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowUp, Search } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
-import { Select, TextInput } from "@/components/common/field";
+import { Select } from "@/components/common/field";
 import { PageShell } from "@/components/layout/page-shell";
 import { MenuItemCard } from "@/components/menu/menu-item-card";
 import { ClientFlowNav } from "@/components/orders/client-flow-nav";
@@ -56,7 +56,7 @@ function MenuBoard({ tableId }: { tableId: string }) {
   const [tableNotFound, setTableNotFound] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedAllergen, setSelectedAllergen] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<"cuisine" | "boissons" | "chicha">("cuisine");
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [syncingMenu, setSyncingMenu] = useState(false);
@@ -310,56 +310,44 @@ function MenuBoard({ tableId }: { tableId: string }) {
     };
   }, [accessToken]);
 
-  const allergenOptions = useMemo(() => {
-    if (!catalog) {
-      return [];
-    }
+  const FOOD_SLUGS = useMemo(() => new Set(["entrees-salades","burgers","pates","viandes","volailles","poissons","pizzas","brunch"]), []);
+  const DRINK_SLUGS = useMemo(() => new Set(["cocktails-sans-alcool","smoothies","cocktails-glaces","milkshakes","boissons-chaudes","sodas-jus","eaux"]), []);
+  const CHICHA_SLUGS = useMemo(() => new Set(["chicha"]), []);
 
+  const allergenOptions = useMemo(() => {
+    if (!catalog) return [];
     return Array.from(new Set(catalog.items.flatMap((item) => item.allergenes))).sort();
   }, [catalog]);
 
-  const normalizedQuery = useMemo(() => searchQuery.trim().toLowerCase(), [searchQuery]);
-
-  const filteredSections = useMemo(() => {
-    if (!catalog) {
-      return [] as Array<{ category: Category; items: MenuItem[] }>;
-    }
-
+  const allSections = useMemo(() => {
+    if (!catalog) return [] as Array<{ category: Category; items: MenuItem[] }>;
     return catalog.categories
       .map((category) => {
         const items = catalog.items
           .filter((item) => item.categorie_id === category.id && item.disponible)
           .filter((item) => {
-            if (selectedAllergen) {
-              const hasAllergen = item
-                .allergenes
-                .map(normalizeAllergen)
-                .includes(normalizeAllergen(selectedAllergen));
-              if (!hasAllergen) {
-                return false;
-              }
-            }
-
-            if (!normalizedQuery) {
-              return true;
-            }
-
-            return `${item.nom} ${item.description}`.toLowerCase().includes(normalizedQuery);
+            if (!selectedAllergen) return true;
+            return item.allergenes.map(normalizeAllergen).includes(normalizeAllergen(selectedAllergen));
           });
-
-        return {
-          category,
-          items,
-        };
+        return { category, items };
       })
       .filter((section) => section.items.length > 0);
-  }, [catalog, normalizedQuery, selectedAllergen]);
+  }, [catalog, selectedAllergen]);
+
+  const filteredSections = useMemo(() => {
+    const slugSet = activeTab === "cuisine" ? FOOD_SLUGS : activeTab === "boissons" ? DRINK_SLUGS : CHICHA_SLUGS;
+    return allSections.filter((s) => slugSet.has(s.category.slug));
+  }, [allSections, activeTab, FOOD_SLUGS, DRINK_SLUGS, CHICHA_SLUGS]);
 
   const visibleItemCount = useMemo(
     () => filteredSections.reduce((sum, section) => sum + section.items.length, 0),
     [filteredSections],
   );
-  const hasFilters = Boolean(selectedAllergen || normalizedQuery);
+  const hasFilters = Boolean(selectedAllergen);
+
+  useEffect(() => {
+    setActiveCategoryId(null);
+  }, [activeTab]);
 
   useEffect(() => {
     const visibleCategories = filteredSections.map((section) => section.category.id);
@@ -496,32 +484,33 @@ function MenuBoard({ tableId }: { tableId: string }) {
           ) : null}
         </div>
 
-        {/* Recherche + catégories collantes */}
+        {/* Navigation : 3 onglets principaux + filtre allergènes */}
         <div className="sticky top-14 z-20 -mx-4 space-y-2 bg-[var(--color-cream)]/95 px-4 pb-2 pt-2 backdrop-blur">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-black)]/40" />
-            <TextInput
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder={messages.client.searchPlaceholder}
-              className="rounded-full pl-9"
-            />
-            {hasFilters ? (
+          {/* 3 grands onglets */}
+          <div className="flex gap-1.5">
+            {([
+              { key: "cuisine",  label: locale === "fr" ? "Cuisine" : "Food" },
+              { key: "boissons", label: locale === "fr" ? "Boissons" : "Drinks" },
+              { key: "chicha",   label: "Chicha" },
+            ] as const).map((tab) => (
               <button
+                key={tab.key}
                 type="button"
-                onClick={() => {
-                  setSearchQuery("");
-                  setSelectedAllergen("");
-                }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-[var(--color-sage)]"
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex-1 rounded-full py-2 text-xs font-bold transition-colors ${
+                  activeTab === tab.key
+                    ? "bg-[var(--color-dark-green)] text-white"
+                    : "bg-white text-[var(--color-dark-green)]"
+                }`}
               >
-                {locale === "fr" ? "Effacer" : "Clear"}
+                {tab.label}
               </button>
-            ) : null}
+            ))}
           </div>
 
-          {filteredSections.length > 0 ? (
-            <div className="flex gap-2 overflow-x-auto pb-1">
+          {/* Sous-catégories du tab actif */}
+          {filteredSections.length > 1 ? (
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
               {filteredSections.map((section) => (
                 <button
                   key={section.category.id}
@@ -532,10 +521,10 @@ function MenuBoard({ tableId }: { tableId: string }) {
                       .getElementById(`cat-${section.category.id}`)
                       ?.scrollIntoView({ behavior: "smooth", block: "start" });
                   }}
-                  className={`whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-bold transition-colors ${
+                  className={`whitespace-nowrap rounded-full px-3.5 py-1 text-xs font-semibold transition-colors ${
                     activeCategoryId === section.category.id
-                      ? "bg-[var(--color-dark-green)] text-white"
-                      : "bg-white text-[var(--color-dark-green)]"
+                      ? "bg-[var(--color-sage)] text-white"
+                      : "bg-white/70 text-[var(--color-dark-green)]"
                   }`}
                 >
                   {section.category.nom}
@@ -544,19 +533,31 @@ function MenuBoard({ tableId }: { tableId: string }) {
             </div>
           ) : null}
 
+          {/* Filtre allergènes */}
           {allergenOptions.length > 0 ? (
-            <Select
-              value={selectedAllergen}
-              onChange={(event) => setSelectedAllergen(event.target.value)}
-              className="h-9 rounded-full text-xs"
-            >
-              <option value="">{messages.client.allergenFilter}</option>
-              {allergenOptions.map((allergen) => (
-                <option key={allergen} value={allergen}>
-                  {allergen}
-                </option>
-              ))}
-            </Select>
+            <div className="flex items-center gap-2">
+              <Select
+                value={selectedAllergen}
+                onChange={(event) => setSelectedAllergen(event.target.value)}
+                className="h-9 flex-1 rounded-full text-xs"
+              >
+                <option value="">{messages.client.allergenFilter}</option>
+                {allergenOptions.map((allergen) => (
+                  <option key={allergen} value={allergen}>
+                    {allergen}
+                  </option>
+                ))}
+              </Select>
+              {hasFilters ? (
+                <button
+                  type="button"
+                  onClick={() => setSelectedAllergen("")}
+                  className="text-xs font-semibold text-[var(--color-sage)]"
+                >
+                  {locale === "fr" ? "Effacer" : "Clear"}
+                </button>
+              ) : null}
+            </div>
           ) : null}
         </div>
 
