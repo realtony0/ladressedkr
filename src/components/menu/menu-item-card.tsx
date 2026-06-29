@@ -39,6 +39,12 @@ const CATEGORY_MEDIA: Record<CategorySlug, { emoji: string; gradient: string }> 
   poissons: { emoji: "🐟", gradient: "from-[#8fb6c9] to-[#4d7e9c]" },
   pizzas: { emoji: "🍕", gradient: "from-[#e0a878] to-[#c46f3f]" },
   "cocktails-sans-alcool": { emoji: "🍹", gradient: "from-[#9ec7b4] to-[#5e9c8a]" },
+  smoothies: { emoji: "🥤", gradient: "from-[#f0a8c0] to-[#d65f8a]" },
+  "cocktails-glaces": { emoji: "🧊", gradient: "from-[#8fc7d6] to-[#4d93b0]" },
+  milkshakes: { emoji: "🥛", gradient: "from-[#e8d8c0] to-[#c9a878]" },
+  "boissons-chaudes": { emoji: "☕", gradient: "from-[#c9a07a] to-[#8a5a32]" },
+  "sodas-jus": { emoji: "🧃", gradient: "from-[#f0c068] to-[#d69020]" },
+  eaux: { emoji: "💧", gradient: "from-[#a8d0e0] to-[#5e9cb8]" },
   brunch: { emoji: "🥞", gradient: "from-[#e6c98f] to-[#c79a4c]" },
 };
 
