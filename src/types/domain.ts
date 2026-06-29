@@ -33,6 +33,12 @@ export type CategorySlug =
   | "poissons"
   | "pizzas"
   | "cocktails-sans-alcool"
+  | "smoothies"
+  | "cocktails-glaces"
+  | "milkshakes"
+  | "boissons-chaudes"
+  | "sodas-jus"
+  | "eaux"
   | "brunch";
 
 export interface Restaurant {
