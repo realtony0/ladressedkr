@@ -58,6 +58,7 @@ const CATEGORY_MEDIA: Record<CategorySlug, { emoji: string; gradient: string }> 
   eaux: { emoji: "💧", gradient: "from-[#a8d0e0] to-[#5e9cb8]" },
   brunch: { emoji: "🥞", gradient: "from-[#e6c98f] to-[#c79a4c]" },
   chicha: { emoji: "💨", gradient: "from-[#b8a0c8] to-[#7a5a9c]" },
+  desserts: { emoji: "🍰", gradient: "from-[#e0b8a8] to-[#c4805f]" },
 };
 
 export function MenuItemCard({
