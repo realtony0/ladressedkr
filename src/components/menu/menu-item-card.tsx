@@ -29,17 +29,6 @@ interface MenuItemCardProps {
   }) => void;
 }
 
-const DRINK_SLUGS = new Set<CategorySlug>([
-  "cocktails-sans-alcool",
-  "smoothies",
-  "cocktails-glaces",
-  "milkshakes",
-  "boissons-chaudes",
-  "sodas-jus",
-  "eaux",
-  "chicha",
-]);
-
 // Visual identity per category — appetizing fallback band when a dish has no photo.
 const CATEGORY_MEDIA: Record<CategorySlug, { emoji: string; gradient: string }> = {
   "entrees-salades": { emoji: "🥗", gradient: "from-[#a7c79a] to-[#6f9c6f]" },
@@ -163,11 +152,9 @@ export function MenuItemCard({
     setJustAdded(true);
   }
 
-  const isDrink = DRINK_SLUGS.has(categorySlug);
-
   const Media = (
     <div className="dish-media relative">
-      {item.photo && !isDrink ? (
+      {item.photo ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={item.photo} alt={item.nom} loading="lazy" className="h-full w-full object-contain" />
       ) : (
@@ -240,7 +227,7 @@ export function MenuItemCard({
           />
           <div className="animate-rise-in relative z-10 max-h-[88vh] w-full overflow-y-auto rounded-t-3xl bg-white sm:max-w-md sm:rounded-3xl">
             <div className="relative h-44">
-              {item.photo && !isDrink ? (
+              {item.photo ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={item.photo} alt={item.nom} className="h-full w-full object-contain" />
               ) : (
