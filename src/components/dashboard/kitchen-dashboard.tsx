@@ -94,6 +94,7 @@ export function KitchenDashboard({ historyOnly = false }: { historyOnly?: boolea
   const [newOrderIds, setNewOrderIds] = useState<string[]>([]);
   const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
   const [soundReady, setSoundReady] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     setSoundReady(isAudioUnlocked());
@@ -442,6 +443,15 @@ export function KitchenDashboard({ historyOnly = false }: { historyOnly?: boolea
     [orders, printOrderId],
   );
 
+  const orderCounts = useMemo(() => {
+    const received = orders.filter((order) => order.statut === "received").length;
+    const preparing = orders.filter((order) => order.statut === "preparing").length;
+    const delayed = orders.filter(
+      (order) => order.statut !== "ready" && delayInMinutes(order.heure) >= preferences.delayAlertMinutes,
+    ).length;
+    return { received, preparing, delayed };
+  }, [orders, preferences.delayAlertMinutes]);
+
   const settingsLabel =
     locale === "fr"
       ? {
@@ -615,7 +625,38 @@ export function KitchenDashboard({ historyOnly = false }: { historyOnly?: boolea
       ) : null}
 
       {!historyOnly ? (
-        <div className="mb-5 grid gap-4 xl:grid-cols-3">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge>
+              {orderCounts.received} {locale === "fr" ? "reçue(s)" : "received"}
+            </Badge>
+            <Badge>
+              {orderCounts.preparing} {locale === "fr" ? "en préparation" : "preparing"}
+            </Badge>
+            {orderCounts.delayed > 0 ? (
+              <Badge className="bg-[#fdecec] text-[#9C3D3D]">
+                {orderCounts.delayed} {locale === "fr" ? "en retard" : "delayed"}
+              </Badge>
+            ) : null}
+            {calls.length > 0 ? (
+              <Badge className="bg-[var(--color-gold)]/20 text-[#8a5a12]">
+                {calls.length} {locale === "fr" ? "appel(s)" : "call(s)"}
+              </Badge>
+            ) : null}
+          </div>
+          <Button type="button" variant="secondary" onClick={() => setSettingsOpen((open) => !open)}>
+            <Settings2 className="h-4 w-4" />
+            {settingsOpen
+              ? locale === "fr"
+                ? "Masquer les réglages"
+                : "Hide settings"
+              : settingsLabel.title}
+          </Button>
+        </div>
+      ) : null}
+
+      {!historyOnly && settingsOpen ? (
+        <div className="mb-5 grid gap-4 lg:grid-cols-2">
           <Card>
             <div className="mb-3 flex items-center justify-between">
               <h3 className="font-heading text-2xl text-[var(--color-dark-green)]">{settingsLabel.title}</h3>
@@ -721,42 +762,40 @@ export function KitchenDashboard({ historyOnly = false }: { historyOnly?: boolea
               </Button>
             </div>
           </Card>
-
-          <Card>
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="font-heading text-2xl text-[var(--color-dark-green)]">{messages.waiter.incomingCalls}</h3>
-              <Badge>{calls.length}</Badge>
-            </div>
-            {calls.length === 0 ? (
-              <p className="text-sm text-[var(--color-black)]/65">{messages.waiter.noCalls}</p>
-            ) : (
-              <ul className="space-y-2">
-                {calls.map((call) => (
-                  <li key={call.id} className="rounded-xl border border-[var(--color-light-gray)] p-2">
-                    <p className="text-sm font-semibold text-[var(--color-dark-green)]">
-                      Table {call.table?.numero ?? "-"} · {serverCallReasonLabel(call.motif, locale)}
-                    </p>
-                    <p className="text-xs text-[var(--color-black)]/65">{formatDateTime(call.heure, locale)}</p>
-                    {call.details ? <p className="mt-1 text-xs text-[var(--color-black)]/75">{call.details}</p> : null}
-                    <div className="mt-2 flex gap-2">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={() => void updateCallStatus(call.id, "acknowledged")}
-                        disabled={call.statut !== "pending"}
-                      >
-                        {messages.waiter.acknowledge}
-                      </Button>
-                      <Button type="button" onClick={() => void updateCallStatus(call.id, "closed")}>
-                        {messages.waiter.closeCall}
-                      </Button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
         </div>
+      ) : null}
+
+      {!historyOnly && calls.length > 0 ? (
+        <Card className="mb-5">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="font-heading text-2xl text-[var(--color-dark-green)]">{messages.waiter.incomingCalls}</h3>
+            <Badge>{calls.length}</Badge>
+          </div>
+          <ul className="grid gap-2 md:grid-cols-2">
+            {calls.map((call) => (
+              <li key={call.id} className="rounded-xl border border-[var(--color-light-gray)] p-2">
+                <p className="text-sm font-semibold text-[var(--color-dark-green)]">
+                  Table {call.table?.numero ?? "-"} · {serverCallReasonLabel(call.motif, locale)}
+                </p>
+                <p className="text-xs text-[var(--color-black)]/65">{formatDateTime(call.heure, locale)}</p>
+                {call.details ? <p className="mt-1 text-xs text-[var(--color-black)]/75">{call.details}</p> : null}
+                <div className="mt-2 flex gap-2">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => void updateCallStatus(call.id, "acknowledged")}
+                    disabled={call.statut !== "pending"}
+                  >
+                    {messages.waiter.acknowledge}
+                  </Button>
+                  <Button type="button" onClick={() => void updateCallStatus(call.id, "closed")}>
+                    {messages.waiter.closeCall}
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Card>
       ) : null}
 
       {loading && orders.length === 0 ? (
