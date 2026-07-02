@@ -173,7 +173,7 @@ export function MenuItemCard({
   }
 
   const Media = (
-    <div className="dish-media relative">
+    <div className="dish-media relative h-full w-full bg-white">
       {item.photo ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={item.photo} alt={item.nom} loading="lazy" className="h-full w-full object-contain" />
@@ -201,7 +201,7 @@ export function MenuItemCard({
     <>
       <article className="card-interactive flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--color-light-gray)] bg-white shadow-card">
         {/* Tappable media + body opens the detail sheet */}
-        <button type="button" onClick={() => setOpen(true)} className="block h-28 w-full text-left sm:h-36">
+        <button type="button" onClick={() => setOpen(true)} className="block h-28 w-full overflow-hidden text-left sm:h-36">
           {Media}
         </button>
 
