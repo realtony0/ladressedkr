@@ -1,6 +1,6 @@
 export type Role = "cuisine" | "serveur" | "admin" | "proprio";
 
-export type OrderStatus = "received" | "preparing" | "ready";
+export type OrderStatus = "received" | "preparing" | "ready" | "cancelled";
 
 export type ServerCallStatus = "pending" | "acknowledged" | "closed";
 

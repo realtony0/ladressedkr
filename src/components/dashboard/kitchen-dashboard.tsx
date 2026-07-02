@@ -95,6 +95,8 @@ export function KitchenDashboard({ historyOnly = false }: { historyOnly?: boolea
   const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
   const [soundReady, setSoundReady] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [doneItems, setDoneItems] = useState<Set<string>>(new Set());
+  const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
     setSoundReady(isAudioUnlocked());
@@ -298,8 +300,8 @@ export function KitchenDashboard({ historyOnly = false }: { historyOnly?: boolea
             return new Date(right.heure).getTime() - new Date(left.heure).getTime();
           }
 
-          const rank = { received: 0, preparing: 1, ready: 2 } as const;
-          const rankDiff = rank[left.statut] - rank[right.statut];
+          const rank: Record<string, number> = { received: 0, preparing: 1, ready: 2, cancelled: 3 };
+          const rankDiff = (rank[left.statut] ?? 99) - (rank[right.statut] ?? 99);
           if (rankDiff !== 0) {
             return rankDiff;
           }
@@ -590,6 +592,35 @@ export function KitchenDashboard({ historyOnly = false }: { historyOnly?: boolea
     void loadData({ silent: true });
   }
 
+  function toggleItemDone(itemId: string) {
+    setDoneItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(itemId)) {
+        next.delete(itemId);
+      } else {
+        next.add(itemId);
+      }
+      return next;
+    });
+  }
+
+  async function cancelOrder(orderId: string) {
+    const supabase = getBrowserSupabase();
+    if (!supabase) return;
+    const { error: updateError } = await supabase
+      .from("orders")
+      .update({ statut: "cancelled" } as { statut: OrderStatus })
+      .eq("id", orderId)
+      .eq("restaurant_id", DEFAULT_RESTAURANT_ID);
+    if (updateError) {
+      notifyError(locale === "fr" ? "Annulation impossible" : "Cancel failed", updateError.message);
+      return;
+    }
+    setCancelConfirmId(null);
+    notifySuccess(locale === "fr" ? "Commande annulée" : "Order cancelled", `#${orderId.slice(0, 8)}`);
+    void loadData({ silent: true });
+  }
+
   return (
     <PageShell
       title={historyOnly ? messages.kitchen.history : messages.kitchen.title}
@@ -870,22 +901,45 @@ export function KitchenDashboard({ historyOnly = false }: { historyOnly?: boolea
                 </div>
 
                 <ul className="mt-4 flex-1 space-y-2">
-                  {order.order_items.map((line) => (
-                    <li key={line.id} className="rounded-xl bg-[#f6f8f6] p-3">
-                      <p className="text-lg font-bold leading-tight text-[var(--color-dark-green)]">
-                        {line.quantite} × {line.item?.nom ?? "Plat supprimé"}
-                      </p>
-                      {line.pizza_size?.taille ? (
-                        <p className="text-sm text-[var(--color-black)]/65">Format : {line.pizza_size.taille}</p>
-                      ) : null}
-                      {line.accompaniment?.nom ? (
-                        <p className="text-sm text-[var(--color-black)]/65">Accompagnement : {line.accompaniment.nom}</p>
-                      ) : null}
-                      {line.note ? (
-                        <p className="mt-0.5 text-sm font-semibold text-[#8a5a12]">📝 {line.note}</p>
-                      ) : null}
-                    </li>
-                  ))}
+                  {order.order_items.map((line) => {
+                    const isDone = doneItems.has(line.id);
+                    return (
+                      <li
+                        key={line.id}
+                        className={cn(
+                          "cursor-pointer rounded-xl p-3 transition-colors select-none",
+                          isDone ? "bg-[#e9f4ea] opacity-60" : "bg-[#f6f8f6]",
+                        )}
+                        onClick={() => toggleItemDone(line.id)}
+                      >
+                        <div className="flex items-start gap-2">
+                          <span className={cn(
+                            "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold",
+                            isDone
+                              ? "border-[var(--color-dark-green)] bg-[var(--color-dark-green)] text-white"
+                              : "border-[var(--color-black)]/25 bg-white text-transparent",
+                          )}>✓</span>
+                          <div className="min-w-0">
+                            <p className={cn(
+                              "text-lg font-bold leading-tight",
+                              isDone ? "line-through text-[var(--color-black)]/40" : "text-[var(--color-dark-green)]",
+                            )}>
+                              {line.quantite} × {line.item?.nom ?? "Plat supprimé"}
+                            </p>
+                            {line.pizza_size?.taille ? (
+                              <p className="text-sm text-[var(--color-black)]/65">Format : {line.pizza_size.taille}</p>
+                            ) : null}
+                            {line.accompaniment?.nom ? (
+                              <p className="text-sm text-[var(--color-black)]/65">Accompagnement : {line.accompaniment.nom}</p>
+                            ) : null}
+                            {line.note ? (
+                              <p className="mt-0.5 text-sm font-semibold text-[#8a5a12]">📝 {line.note}</p>
+                            ) : null}
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
 
                 {!historyOnly ? (
@@ -917,6 +971,33 @@ export function KitchenDashboard({ historyOnly = false }: { historyOnly?: boolea
                           ↩︎
                         </button>
                       ) : null}
+                      {cancelConfirmId === order.id ? (
+                        <div className="flex gap-1">
+                          <button
+                            type="button"
+                            onClick={() => void cancelOrder(order.id)}
+                            className="rounded-xl bg-[#9C3D3D] px-3 py-2.5 text-sm font-bold text-white"
+                          >
+                            {locale === "fr" ? "Confirmer" : "Confirm"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setCancelConfirmId(null)}
+                            className="rounded-xl border border-[var(--color-light-gray)] px-3 py-2.5 text-sm font-semibold text-[var(--color-black)]/55"
+                          >
+                            {locale === "fr" ? "Non" : "No"}
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setCancelConfirmId(order.id)}
+                          className="rounded-xl border border-[#9C3D3D]/40 px-3 py-2.5 text-sm font-semibold text-[#9C3D3D]"
+                          title={locale === "fr" ? "Annuler la commande" : "Cancel order"}
+                        >
+                          ✕
+                        </button>
+                      )}
                     </div>
                   </div>
                 ) : null}

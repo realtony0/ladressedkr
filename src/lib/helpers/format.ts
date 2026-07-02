@@ -34,12 +34,14 @@ export function orderStatusLabel(status: OrderStatus, locale: Locale = "fr") {
     received: "Reçue",
     preparing: "En préparation",
     ready: "Prête",
+    cancelled: "Annulée",
   };
 
   const enLabels: Record<OrderStatus, string> = {
     received: "Received",
     preparing: "Preparing",
     ready: "Ready",
+    cancelled: "Cancelled",
   };
 
   return locale === "fr" ? frLabels[status] : enLabels[status];
