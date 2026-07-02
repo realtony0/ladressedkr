@@ -41,6 +41,7 @@ const CATEGORY_MEDIA: Record<CategorySlug, { emoji: string; gradient: string }> 
   volailles: { emoji: "🍗", gradient: "from-[#e3bd86] to-[#bd8a45]" },
   poissons: { emoji: "🐟", gradient: "from-[#8fb6c9] to-[#4d7e9c]" },
   pizzas: { emoji: "🍕", gradient: "from-[#e0a878] to-[#c46f3f]" },
+  accompagnements: { emoji: "🍟", gradient: "from-[#e8cd8f] to-[#c7a24c]" },
   "cocktails-sans-alcool": { emoji: "🍹", gradient: "from-[#9ec7b4] to-[#5e9c8a]" },
   smoothies: { emoji: "🥤", gradient: "from-[#f0a8c0] to-[#d65f8a]" },
   "cocktails-glaces": { emoji: "🧊", gradient: "from-[#8fc7d6] to-[#4d93b0]" },

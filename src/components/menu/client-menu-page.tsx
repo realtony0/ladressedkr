@@ -309,7 +309,7 @@ function MenuBoard({ tableId }: { tableId: string }) {
     };
   }, [accessToken]);
 
-  const FOOD_SLUGS = useMemo(() => new Set(["entrees-salades","burgers","pates","viandes","volailles","poissons","pizzas","brunch","desserts"]), []);
+  const FOOD_SLUGS = useMemo(() => new Set(["entrees-salades","burgers","pates","viandes","volailles","poissons","pizzas","accompagnements","brunch","desserts"]), []);
   const DRINK_SLUGS = useMemo(() => new Set(["cocktails-sans-alcool","smoothies","cocktails-glaces","milkshakes","boissons-chaudes","sodas-jus","eaux"]), []);
   const CHICHA_SLUGS = useMemo(() => new Set(["chicha"]), []);
 

@@ -32,6 +32,7 @@ export type CategorySlug =
   | "volailles"
   | "poissons"
   | "pizzas"
+  | "accompagnements"
   | "cocktails-sans-alcool"
   | "smoothies"
   | "cocktails-glaces"
