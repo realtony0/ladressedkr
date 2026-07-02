@@ -179,7 +179,7 @@ export function ClientOrdersPage({ tableId }: { tableId: string }) {
     <PageShell
       title={messages.client.orderHistory}
       subtitle={`${messages.common.table} ${table?.numero ?? tableId} · ${messages.client.activeOrders}`}
-      className="pb-28 lg:pb-8"
+      className="pb-10"
     >
       <ClientFlowNav tableId={tableId} />
 

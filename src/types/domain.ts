@@ -174,6 +174,9 @@ export interface CartLine {
   accompanimentId: string | null;
   accompanimentLabel: string | null;
   accompanimentPrice: number;
+  supplementId: string | null;
+  supplementLabel: string | null;
+  supplementPrice: number;
   pizzaSizeId: string | null;
   pizzaSizeLabel: string | null;
   pizzaSizePrice: number;

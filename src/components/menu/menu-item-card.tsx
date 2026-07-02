@@ -23,6 +23,9 @@ interface MenuItemCardProps {
     accompanimentId: string | null;
     accompanimentLabel: string | null;
     accompanimentPrice: number;
+    supplementId: string | null;
+    supplementLabel: string | null;
+    supplementPrice: number;
     pizzaSizeId: string | null;
     pizzaSizeLabel: string | null;
     pizzaSizePrice: number;
@@ -75,16 +78,24 @@ export function MenuItemCard({
   const initialAccompaniment = needsAccompaniment ? sortedAccompaniments[0] : null;
   const initialPizza = itemPizzaSizes[0] ?? null;
 
+  // Extra side dish, billed on top of the dish (the included accompaniment is free).
+  const supplementOptions = useMemo(
+    () => sortedAccompaniments.filter((entry) => entry.prix_supplement > 0),
+    [sortedAccompaniments],
+  );
+
   const [note, setNote] = useState("");
   const [selectedAccompanimentId, setSelectedAccompanimentId] = useState<string | null>(
     initialAccompaniment?.id ?? null,
   );
+  const [selectedSupplementId, setSelectedSupplementId] = useState<string | null>(null);
   const [selectedPizzaSizeId, setSelectedPizzaSizeId] = useState<string | null>(initialPizza?.id ?? null);
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
   const [open, setOpen] = useState(false);
 
   const selectedAccompaniment = sortedAccompaniments.find((entry) => entry.id === selectedAccompanimentId) ?? null;
+  const selectedSupplement = supplementOptions.find((entry) => entry.id === selectedSupplementId) ?? null;
   const selectedPizzaSize = itemPizzaSizes.find((entry) => entry.id === selectedPizzaSizeId) ?? initialPizza;
 
   const basePrice = selectedPizzaSize?.prix ?? item.prix;
@@ -117,7 +128,11 @@ export function MenuItemCard({
         note,
         accompanimentId: selectedAccompaniment?.id ?? null,
         accompanimentLabel: selectedAccompaniment?.nom ?? null,
-        accompanimentPrice: selectedAccompaniment?.prix_supplement ?? 0,
+        // The included accompaniment is free; only the optional extra is billed.
+        accompanimentPrice: 0,
+        supplementId: selectedSupplement?.id ?? null,
+        supplementLabel: selectedSupplement?.nom ?? null,
+        supplementPrice: selectedSupplement?.prix_supplement ?? 0,
         pizzaSizeId: selectedPizzaSize?.id ?? null,
         pizzaSizeLabel: selectedPizzaSize?.taille ?? null,
         pizzaSizePrice: discountedPrice,
@@ -137,6 +152,9 @@ export function MenuItemCard({
       accompanimentId: null,
       accompanimentLabel: null,
       accompanimentPrice: 0,
+      supplementId: null,
+      supplementLabel: null,
+      supplementPrice: 0,
       pizzaSizeId: selectedPizzaSize?.id ?? null,
       pizzaSizeLabel: selectedPizzaSize?.taille ?? null,
       pizzaSizePrice: discountedPrice,
@@ -149,6 +167,7 @@ export function MenuItemCard({
     setOpen(false);
     setNote("");
     setQuantity(1);
+    setSelectedSupplementId(null);
     setJustAdded(true);
   }
 
@@ -283,7 +302,11 @@ export function MenuItemCard({
               {needsAccompaniment ? (
                 <div>
                   <FieldLabel>
-                    {messages.client.accompaniment} <span className="text-[#9C3D3D]">*</span>
+                    {messages.client.accompaniment}{" "}
+                    <span className="font-normal text-[var(--color-sage)]">
+                      ({locale === "fr" ? "inclus" : "included"})
+                    </span>{" "}
+                    <span className="text-[#9C3D3D]">*</span>
                   </FieldLabel>
                   <Select
                     value={selectedAccompanimentId ?? ""}
@@ -292,9 +315,28 @@ export function MenuItemCard({
                     {sortedAccompaniments.map((accompaniment) => (
                       <option key={accompaniment.id} value={accompaniment.id}>
                         {accompaniment.nom}
-                        {accompaniment.prix_supplement > 0
-                          ? ` (+${formatCurrency(accompaniment.prix_supplement, locale)})`
-                          : ""}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+              ) : null}
+
+              {needsAccompaniment && supplementOptions.length > 0 ? (
+                <div>
+                  <FieldLabel>
+                    {locale === "fr" ? "Supplément" : "Extra side"}{" "}
+                    <span className="font-normal text-[var(--color-black)]/45">
+                      ({locale === "fr" ? "facultatif, payant" : "optional, paid"})
+                    </span>
+                  </FieldLabel>
+                  <Select
+                    value={selectedSupplementId ?? ""}
+                    onChange={(event) => setSelectedSupplementId(event.target.value || null)}
+                  >
+                    <option value="">{locale === "fr" ? "Aucun supplément" : "No extra"}</option>
+                    {supplementOptions.map((supplement) => (
+                      <option key={supplement.id} value={supplement.id}>
+                        {supplement.nom} (+{formatCurrency(supplement.prix_supplement, locale)})
                       </option>
                     ))}
                   </Select>
@@ -337,7 +379,7 @@ export function MenuItemCard({
               </div>
 
               <Button type="button" onClick={confirmFromSheet} className="w-full rounded-2xl py-3 text-base">
-                {messages.client.addToCart} · {formatCurrency((discountedPrice + (selectedAccompaniment?.prix_supplement ?? 0)) * quantity, locale)}
+                {messages.client.addToCart} · {formatCurrency((discountedPrice + (selectedSupplement?.prix_supplement ?? 0)) * quantity, locale)}
               </Button>
             </div>
           </div>

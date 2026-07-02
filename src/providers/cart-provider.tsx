@@ -11,6 +11,9 @@ interface AddLineInput {
   accompanimentId?: string | null;
   accompanimentLabel?: string | null;
   accompanimentPrice?: number;
+  supplementId?: string | null;
+  supplementLabel?: string | null;
+  supplementPrice?: number;
   pizzaSizeId?: string | null;
   pizzaSizeLabel?: string | null;
   pizzaSizePrice?: number;
@@ -95,6 +98,10 @@ function readCartLines(tableNumber: string): CartLine[] {
           typeof line.accompanimentPrice === "number" && Number.isFinite(line.accompanimentPrice)
             ? line.accompanimentPrice
             : 0;
+        const supplementPrice =
+          typeof line.supplementPrice === "number" && Number.isFinite(line.supplementPrice)
+            ? line.supplementPrice
+            : 0;
         const pizzaSizePrice =
           typeof line.pizzaSizePrice === "number" && Number.isFinite(line.pizzaSizePrice)
             ? line.pizzaSizePrice
@@ -114,6 +121,13 @@ function readCartLines(tableNumber: string): CartLine[] {
               ? line.accompanimentLabel
               : null,
           accompanimentPrice,
+          supplementId:
+            typeof line.supplementId === "string" || line.supplementId === null ? line.supplementId : null,
+          supplementLabel:
+            typeof line.supplementLabel === "string" || line.supplementLabel === null
+              ? line.supplementLabel
+              : null,
+          supplementPrice,
           pizzaSizeId: typeof line.pizzaSizeId === "string" || line.pizzaSizeId === null ? line.pizzaSizeId : null,
           pizzaSizeLabel:
             typeof line.pizzaSizeLabel === "string" || line.pizzaSizeLabel === null
@@ -150,15 +164,17 @@ function normalizeNote(note: string) {
 function lineSignature({
   itemId,
   accompanimentId,
+  supplementId,
   pizzaSizeId,
   note,
 }: {
   itemId: string;
   accompanimentId: string | null;
+  supplementId: string | null;
   pizzaSizeId: string | null;
   note: string;
 }) {
-  return `${itemId}::${accompanimentId ?? "none"}::${pizzaSizeId ?? "none"}::${note.toLowerCase()}`;
+  return `${itemId}::${accompanimentId ?? "none"}::${supplementId ?? "none"}::${pizzaSizeId ?? "none"}::${note.toLowerCase()}`;
 }
 
 export function CartProvider({
@@ -202,6 +218,7 @@ export function CartProvider({
         const nextSignature = lineSignature({
           itemId: input.item.id,
           accompanimentId: input.accompanimentId ?? null,
+          supplementId: input.supplementId ?? null,
           pizzaSizeId: input.pizzaSizeId ?? null,
           note: normalized,
         });
@@ -211,6 +228,7 @@ export function CartProvider({
             const currentSignature = lineSignature({
               itemId: line.item.id,
               accompanimentId: line.accompanimentId,
+              supplementId: line.supplementId,
               pizzaSizeId: line.pizzaSizeId,
               note: normalizeNote(line.note),
             });
@@ -228,6 +246,9 @@ export function CartProvider({
                 accompanimentId: input.accompanimentId ?? null,
                 accompanimentLabel: input.accompanimentLabel ?? null,
                 accompanimentPrice: input.accompanimentPrice ?? 0,
+                supplementId: input.supplementId ?? null,
+                supplementLabel: input.supplementLabel ?? null,
+                supplementPrice: input.supplementPrice ?? 0,
                 pizzaSizeId: input.pizzaSizeId ?? null,
                 pizzaSizeLabel: input.pizzaSizeLabel ?? null,
                 pizzaSizePrice: input.pizzaSizePrice ?? input.item.prix,
@@ -267,7 +288,7 @@ export function CartProvider({
       subtotal: lines.reduce(
         (sum, line) =>
           sum +
-          (line.pizzaSizePrice + line.accompanimentPrice) *
+          (line.pizzaSizePrice + line.accompanimentPrice + line.supplementPrice) *
             (Number.isFinite(line.quantity) ? line.quantity : 1),
         0,
       ),
@@ -285,4 +306,9 @@ export function useCart() {
   }
 
   return context;
+}
+
+// Same as useCart but safe outside CartProvider (e.g. /commande/[id]).
+export function useCartOptional() {
+  return useContext(CartContext);
 }

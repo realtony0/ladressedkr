@@ -136,7 +136,7 @@ export function OrderTrackingPage({ orderId, tableHint }: { orderId: string; tab
 
   if (loading) {
     return (
-      <PageShell title={messages.client.orderTracking} className="pb-28 lg:pb-8">
+      <PageShell title={messages.client.orderTracking} className="pb-10">
         <Card>{messages.common.loading}</Card>
       </PageShell>
     );
@@ -144,7 +144,7 @@ export function OrderTrackingPage({ orderId, tableHint }: { orderId: string; tab
 
   if (!order) {
     return (
-      <PageShell title={messages.client.orderTracking} className="pb-28 lg:pb-8">
+      <PageShell title={messages.client.orderTracking} className="pb-10">
         <Card>Commande introuvable.</Card>
       </PageShell>
     );
@@ -157,7 +157,7 @@ export function OrderTrackingPage({ orderId, tableHint }: { orderId: string; tab
     <PageShell
       title={`${messages.client.orderTracking} #${order.id.slice(0, 8)}`}
       subtitle={`${messages.common.table} ${order.table?.numero ?? tableHint ?? "-"}`}
-      className="pb-28 lg:pb-8"
+      className="pb-10"
     >
       {tableForNav ? <ClientFlowNav tableId={tableForNav} /> : null}
 

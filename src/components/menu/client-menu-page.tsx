@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, BellRing, History } from "lucide-react";
 
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
 import { Select } from "@/components/common/field";
 import { PageShell } from "@/components/layout/page-shell";
 import { MenuItemCard } from "@/components/menu/menu-item-card";
-import { ClientFlowNav } from "@/components/orders/client-flow-nav";
 import {
   activePromotionForItem,
   getFallbackCatalog,
@@ -474,15 +473,38 @@ function MenuBoard({ tableId }: { tableId: string }) {
               {menuSource === "offline" ? " · hors-ligne" : ""}
             </p>
           </div>
-          {activeOrder ? (
+          <div className="flex shrink-0 items-center gap-2">
             <Link
               href={`/${tableId}/commandes`}
-              className="shrink-0 rounded-full bg-[#eef4ee] px-3 py-1.5 text-xs font-bold text-[var(--color-dark-green)]"
+              aria-label={locale === "fr" ? "Mes commandes" : "My orders"}
+              className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-light-gray)] bg-white text-[var(--color-dark-green)] shadow-sm"
             >
-              {locale === "fr" ? "Suivre ma commande →" : "Track order →"}
+              <History className="h-5 w-5" />
+              {activeOrderCount > 0 ? (
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-[var(--color-dark-green)] px-1 text-[10px] font-bold text-white">
+                  {activeOrderCount}
+                </span>
+              ) : null}
             </Link>
-          ) : null}
+            <Link
+              href={`/${tableId}/appel`}
+              aria-label={messages.client.callServer}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-light-gray)] bg-white text-[var(--color-dark-green)] shadow-sm"
+            >
+              <BellRing className="h-5 w-5" />
+            </Link>
+          </div>
         </div>
+
+        {activeOrder ? (
+          <Link
+            href={`/${tableId}/commandes`}
+            className="mb-2 flex items-center justify-between rounded-2xl bg-[#eef4ee] px-4 py-2.5 text-xs font-bold text-[var(--color-dark-green)]"
+          >
+            <span>{locale === "fr" ? "Commande en cours" : "Order in progress"}</span>
+            <span>{locale === "fr" ? "Suivre →" : "Track →"}</span>
+          </Link>
+        ) : null}
 
         {/* Navigation : 3 onglets principaux + filtre allergènes */}
         <div className="sticky top-14 z-20 -mx-4 space-y-2 bg-[var(--color-cream)]/95 px-4 pb-2 pt-2 backdrop-blur">
@@ -596,6 +618,9 @@ function MenuBoard({ tableId }: { tableId: string }) {
                           accompanimentId: payload.accompanimentId,
                           accompanimentLabel: payload.accompanimentLabel,
                           accompanimentPrice: payload.accompanimentPrice,
+                          supplementId: payload.supplementId,
+                          supplementLabel: payload.supplementLabel,
+                          supplementPrice: payload.supplementPrice,
                           pizzaSizeId: payload.pizzaSizeId,
                           pizzaSizeLabel: payload.pizzaSizeLabel,
                           pizzaSizePrice: payload.pizzaSizePrice,
@@ -613,7 +638,7 @@ function MenuBoard({ tableId }: { tableId: string }) {
 
       {/* Barre panier collante */}
       {lines.length > 0 ? (
-        <div className="fixed inset-x-0 bottom-[4.75rem] z-40 px-3">
+        <div className="fixed inset-x-0 bottom-3 z-40 px-3">
           <Link href={`/${tableId}/panier`} className="mx-auto block max-w-3xl">
             <div className="flex items-center justify-between rounded-2xl bg-[var(--color-dark-green)] px-5 py-3.5 text-white shadow-float transition-transform active:scale-[0.99]">
               <span className="flex items-center gap-2 text-sm font-bold">
@@ -629,7 +654,7 @@ function MenuBoard({ tableId }: { tableId: string }) {
       ) : null}
 
       {lastAddedDish ? (
-        <div className="pointer-events-none fixed bottom-[8.5rem] left-1/2 z-40 -translate-x-1/2 rounded-full bg-[var(--color-dark-green)] px-4 py-2 text-sm font-semibold text-white shadow-lg">
+        <div className="pointer-events-none fixed bottom-20 left-1/2 z-40 -translate-x-1/2 rounded-full bg-[var(--color-dark-green)] px-4 py-2 text-sm font-semibold text-white shadow-lg">
           {locale === "fr" ? "Ajouté ✓" : "Added ✓"} {lastAddedDish}
         </div>
       ) : null}
@@ -638,14 +663,12 @@ function MenuBoard({ tableId }: { tableId: string }) {
         <button
           type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="fixed bottom-[8.5rem] right-3 z-40 inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-sage)] bg-white text-[var(--color-dark-green)] shadow-lg"
+          className="fixed bottom-20 right-3 z-40 inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-sage)] bg-white text-[var(--color-dark-green)] shadow-lg"
           aria-label={locale === "fr" ? "Retour en haut" : "Back to top"}
         >
           <ArrowUp className="h-4 w-4" />
         </button>
       ) : null}
-
-      <ClientFlowNav tableId={tableId} />
     </>
   );
 }
