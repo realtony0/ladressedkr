@@ -68,6 +68,7 @@ Renseigner ensuite:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `NEXT_PUBLIC_APP_URL`
+- `NEXT_PUBLIC_QR_BASE_URL` (par défaut: `https://ladressedkr.com`)
 - `NEXT_PUBLIC_DEFAULT_RESTAURANT_ID`
 - `RESEND_API_KEY`, `REPORT_EMAIL_FROM`, `REPORT_EMAIL_TO`, `WHATSAPP_WEBHOOK_URL` (rapport quotidien)
 
@@ -86,7 +87,7 @@ Application locale: [http://localhost:3000](http://localhost:3000)
 - Staff: login via `/staff/login` (Supabase Auth)
 - Bootstrap admin initial via `/staff/setup-admin` (100% depuis le site)
 - Middleware de protection par rôle: `middleware.ts`
-- Email admin principal configuré: `ladresse.sn@outlook.fr`
+- Email admin principal configuré: `mbeuwdylam@gmail.com`
 
 ## Cron rapport quotidien
 `vercel.json` configure:

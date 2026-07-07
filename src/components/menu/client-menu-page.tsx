@@ -452,7 +452,11 @@ function MenuBoard({ tableId }: { tableId: string }) {
   const brunchOpen = isBrunchCurrentlyOpen(catalog.serviceHours);
   const visibleCountLabel =
     locale === "fr" ? `${visibleItemCount} plats affichés` : `${visibleItemCount} dishes shown`;
-
+  const menuStatusLabel = syncingMenu
+    ? locale === "fr"
+      ? "Synchronisation du menu..."
+      : "Syncing menu..."
+    : null;
   const totalQty = lines.reduce((sum, line) => sum + line.quantity, 0);
 
   return (
@@ -472,6 +476,13 @@ function MenuBoard({ tableId }: { tableId: string }) {
               {messages.common.table} {table.numero} · {visibleCountLabel}
               {menuSource === "offline" ? " · hors-ligne" : ""}
             </p>
+            {menuStatusLabel || loadingActiveOrder ? (
+              <p className="mt-1 text-xs font-semibold text-[var(--color-sage)]">
+                {[menuStatusLabel, loadingActiveOrder ? (locale === "fr" ? "Vérification des commandes..." : "Checking orders...") : null]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            ) : null}
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <Link
@@ -602,7 +613,7 @@ function MenuBoard({ tableId }: { tableId: string }) {
             return (
               <section key={section.category.id} id={`cat-${section.category.id}`} className="scroll-mt-28 space-y-3">
                 <h2 className="font-title text-2xl text-[var(--color-dark-green)]">{section.category.nom}</h2>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {section.items.map((item) => (
                     <MenuItemCard
                       key={item.id}

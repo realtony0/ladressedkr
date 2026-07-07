@@ -8,6 +8,8 @@ export type ServerCallReason = "addition" | "aide" | "demande_speciale";
 
 export type ReservationStatus = "pending" | "confirmed" | "declined" | "cancelled";
 
+export type ReservationLocation = "interieur" | "terrasse";
+
 export interface Reservation {
   id: string;
   restaurant_id: string;
@@ -17,6 +19,7 @@ export interface Reservation {
   date_reservation: string;
   heure: string;
   nb_personnes: number;
+  emplacement: ReservationLocation;
   message: string | null;
   statut: ReservationStatus;
   created_at: string;

@@ -35,14 +35,9 @@ UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1579751626657
 UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1594007654729-407eedc4be65?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Pizza Amalfi';
 UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1571997478779-2adcbbe9ab2f?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Pizza Bella Mare';
 UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1571066811602-716837d681de?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Pizza Norvégienne';
-UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1654074517750-f854f7c27d62?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Virgin Mojito Classique';
-UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1595977514600-72cbc8376c38?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Virgin Mojito Passion';
-UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1634496064950-02f043806b09?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Virgin Mojito Fraise';
-UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Virgin Spritz Chic';
-UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1499638673689-79a0b5115d87?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Passion Fizz';
-UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1654074518423-750767f571a9?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Ginger Lemon';
-UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1610515660473-c11d4f3f7d37?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Virgin Piña Colada';
-UPDATE public.items SET photo = 'https://images.unsplash.com/photo-1661942477265-c6e3fbebb714?auto=format&fit=crop&w=800&q=70' WHERE nom = 'Red Velvet';
+UPDATE public.items
+SET photo = NULL
+WHERE categorie_id IN (SELECT id FROM public.categories WHERE slug = 'cocktails-sans-alcool');
 COMMIT;
 -- Vérification :
 -- SELECT nom, photo FROM public.items ORDER BY nom;
