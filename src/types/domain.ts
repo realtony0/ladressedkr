@@ -1,6 +1,6 @@
 export type Role = "cuisine" | "serveur" | "admin" | "proprio";
 
-export type OrderStatus = "received" | "preparing" | "ready";
+export type OrderStatus = "received" | "preparing" | "ready" | "cancelled";
 
 export type ServerCallStatus = "pending" | "acknowledged" | "closed";
 
@@ -35,6 +35,7 @@ export type CategorySlug =
   | "volailles"
   | "poissons"
   | "pizzas"
+  | "accompagnements"
   | "cocktails-sans-alcool"
   | "smoothies"
   | "cocktails-glaces"
@@ -42,7 +43,9 @@ export type CategorySlug =
   | "boissons-chaudes"
   | "sodas-jus"
   | "eaux"
-  | "brunch";
+  | "brunch"
+  | "chicha"
+  | "desserts";
 
 export interface Restaurant {
   id: string;
@@ -175,6 +178,9 @@ export interface CartLine {
   accompanimentId: string | null;
   accompanimentLabel: string | null;
   accompanimentPrice: number;
+  supplementId: string | null;
+  supplementLabel: string | null;
+  supplementPrice: number;
   pizzaSizeId: string | null;
   pizzaSizeLabel: string | null;
   pizzaSizePrice: number;

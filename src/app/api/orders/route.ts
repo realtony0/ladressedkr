@@ -11,6 +11,7 @@ interface OrderLineInput {
   quantity: number;
   note?: string;
   accompanimentId?: string | null;
+  supplementId?: string | null;
   pizzaSizeId?: string | null;
 }
 
@@ -70,7 +71,11 @@ export async function POST(request: Request) {
 
   const itemIds = Array.from(new Set(body.lines.map((line) => line.itemId)));
   const accompanimentIds = Array.from(
-    new Set(body.lines.map((line) => line.accompanimentId).filter(Boolean) as string[]),
+    new Set(
+      body.lines
+        .flatMap((line) => [line.accompanimentId, line.supplementId])
+        .filter(Boolean) as string[],
+    ),
   );
   const pizzaSizeIds = Array.from(new Set(body.lines.map((line) => line.pizzaSizeId).filter(Boolean) as string[]));
 
@@ -115,6 +120,7 @@ export async function POST(request: Request) {
 
   const accompaniments = (accompanimentsResult.data ?? []) as unknown as Array<{
     id: string;
+    nom: string;
     prix_supplement: number;
   }>;
 
@@ -161,13 +167,17 @@ export async function POST(request: Request) {
     totalUnits += quantity;
 
     const accompaniment = line.accompanimentId ? accompanimentMap.get(line.accompanimentId) : null;
+    const extraSupplement = line.supplementId ? accompanimentMap.get(line.supplementId) : null;
+    if (line.supplementId && !extraSupplement) {
+      return NextResponse.json({ error: "Supplément invalide." }, { status: 400 });
+    }
     const categorySlug = item.categorie?.slug;
     const accompanimentRequired =
       item.a_accompagnement &&
       categorySlug &&
       ACCOMPANIMENT_REQUIRED_SLUGS.includes(categorySlug as (typeof ACCOMPANIMENT_REQUIRED_SLUGS)[number]);
 
-    if (!accompanimentRequired && accompaniment) {
+    if (!accompanimentRequired && (accompaniment || extraSupplement)) {
       return NextResponse.json(
         { error: "Les accompagnements sont disponibles uniquement pour viandes, volailles et poissons." },
         { status: 400 },
@@ -199,8 +209,12 @@ export async function POST(request: Request) {
 
     const basePrice = size?.prix ?? item.prix;
     const unitPrice = applyPromotion(basePrice, promotion);
-    const supplement = accompaniment?.prix_supplement ?? 0;
-    const note = line.note?.trim() || null;
+    // The included accompaniment is free; only an optional extra side is billed.
+    const supplement = extraSupplement?.prix_supplement ?? 0;
+    const userNote = line.note?.trim() || null;
+    const note = extraSupplement
+      ? [userNote, `Supplément : ${extraSupplement.nom}`].filter(Boolean).join(" · ")
+      : userNote;
     if (note) {
       hasNotes = true;
     }

@@ -23,6 +23,9 @@ interface MenuItemCardProps {
     accompanimentId: string | null;
     accompanimentLabel: string | null;
     accompanimentPrice: number;
+    supplementId: string | null;
+    supplementLabel: string | null;
+    supplementPrice: number;
     pizzaSizeId: string | null;
     pizzaSizeLabel: string | null;
     pizzaSizePrice: number;
@@ -38,6 +41,7 @@ const CATEGORY_MEDIA: Record<CategorySlug, { emoji: string; gradient: string }> 
   volailles: { emoji: "🍗", gradient: "from-[#e3bd86] to-[#bd8a45]" },
   poissons: { emoji: "🐟", gradient: "from-[#8fb6c9] to-[#4d7e9c]" },
   pizzas: { emoji: "🍕", gradient: "from-[#e0a878] to-[#c46f3f]" },
+  accompagnements: { emoji: "🍟", gradient: "from-[#e8cd8f] to-[#c7a24c]" },
   "cocktails-sans-alcool": { emoji: "🍹", gradient: "from-[#9ec7b4] to-[#5e9c8a]" },
   smoothies: { emoji: "🥤", gradient: "from-[#f0a8c0] to-[#d65f8a]" },
   "cocktails-glaces": { emoji: "🧊", gradient: "from-[#8fc7d6] to-[#4d93b0]" },
@@ -46,17 +50,9 @@ const CATEGORY_MEDIA: Record<CategorySlug, { emoji: string; gradient: string }> 
   "sodas-jus": { emoji: "🧃", gradient: "from-[#f0c068] to-[#d69020]" },
   eaux: { emoji: "💧", gradient: "from-[#a8d0e0] to-[#5e9cb8]" },
   brunch: { emoji: "🥞", gradient: "from-[#e6c98f] to-[#c79a4c]" },
+  chicha: { emoji: "💨", gradient: "from-[#b8a0c8] to-[#7a5a9c]" },
+  desserts: { emoji: "🍰", gradient: "from-[#e0b8a8] to-[#c4805f]" },
 };
-
-const DRINK_CATEGORY_SLUGS: CategorySlug[] = [
-  "cocktails-sans-alcool",
-  "smoothies",
-  "cocktails-glaces",
-  "milkshakes",
-  "boissons-chaudes",
-  "sodas-jus",
-  "eaux",
-];
 
 export function MenuItemCard({
   item,
@@ -83,16 +79,24 @@ export function MenuItemCard({
   const initialAccompaniment = needsAccompaniment ? sortedAccompaniments[0] : null;
   const initialPizza = itemPizzaSizes[0] ?? null;
 
+  // Extra side dish, billed on top of the dish (the included accompaniment is free).
+  const supplementOptions = useMemo(
+    () => sortedAccompaniments.filter((entry) => entry.prix_supplement > 0),
+    [sortedAccompaniments],
+  );
+
   const [note, setNote] = useState("");
   const [selectedAccompanimentId, setSelectedAccompanimentId] = useState<string | null>(
     initialAccompaniment?.id ?? null,
   );
+  const [selectedSupplementId, setSelectedSupplementId] = useState<string | null>(null);
   const [selectedPizzaSizeId, setSelectedPizzaSizeId] = useState<string | null>(initialPizza?.id ?? null);
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
   const [open, setOpen] = useState(false);
 
   const selectedAccompaniment = sortedAccompaniments.find((entry) => entry.id === selectedAccompanimentId) ?? null;
+  const selectedSupplement = supplementOptions.find((entry) => entry.id === selectedSupplementId) ?? null;
   const selectedPizzaSize = itemPizzaSizes.find((entry) => entry.id === selectedPizzaSizeId) ?? initialPizza;
 
   const basePrice = selectedPizzaSize?.prix ?? item.prix;
@@ -118,7 +122,7 @@ export function MenuItemCard({
   }, [open]);
 
   const media = CATEGORY_MEDIA[categorySlug] ?? CATEGORY_MEDIA["entrees-salades"];
-  const photoSrc = !DRINK_CATEGORY_SLUGS.includes(categorySlug) ? (item.photo ?? undefined) : undefined;
+  const photoSrc = item.photo ?? undefined;
 
   function emitAdd() {
     for (let i = 0; i < Math.max(1, quantity); i += 1) {
@@ -126,7 +130,11 @@ export function MenuItemCard({
         note,
         accompanimentId: selectedAccompaniment?.id ?? null,
         accompanimentLabel: selectedAccompaniment?.nom ?? null,
-        accompanimentPrice: selectedAccompaniment?.prix_supplement ?? 0,
+        // The included accompaniment is free; only the optional extra is billed.
+        accompanimentPrice: 0,
+        supplementId: selectedSupplement?.id ?? null,
+        supplementLabel: selectedSupplement?.nom ?? null,
+        supplementPrice: selectedSupplement?.prix_supplement ?? 0,
         pizzaSizeId: selectedPizzaSize?.id ?? null,
         pizzaSizeLabel: selectedPizzaSize?.taille ?? null,
         pizzaSizePrice: discountedPrice,
@@ -146,6 +154,9 @@ export function MenuItemCard({
       accompanimentId: null,
       accompanimentLabel: null,
       accompanimentPrice: 0,
+      supplementId: null,
+      supplementLabel: null,
+      supplementPrice: 0,
       pizzaSizeId: selectedPizzaSize?.id ?? null,
       pizzaSizeLabel: selectedPizzaSize?.taille ?? null,
       pizzaSizePrice: discountedPrice,
@@ -158,6 +169,7 @@ export function MenuItemCard({
     setOpen(false);
     setNote("");
     setQuantity(1);
+    setSelectedSupplementId(null);
     setJustAdded(true);
   }
 
@@ -193,7 +205,7 @@ export function MenuItemCard({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="block h-36 w-36 shrink-0 text-left sm:h-44 sm:w-full"
+          className="block h-36 w-36 shrink-0 overflow-hidden text-left sm:h-44 sm:w-full"
         >
           {Media}
         </button>
@@ -247,7 +259,7 @@ export function MenuItemCard({
             <div className="relative h-64 sm:h-72">
               {photoSrc ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={photoSrc} alt={item.nom} className="h-full w-full object-cover" />
+                <img src={photoSrc} alt={item.nom} className="h-full w-full object-contain" />
               ) : (
                 <div className={cn("flex h-full w-full items-center justify-center bg-gradient-to-br", media.gradient)}>
                   <span className="text-6xl" aria-hidden>
@@ -301,7 +313,11 @@ export function MenuItemCard({
               {needsAccompaniment ? (
                 <div>
                   <FieldLabel>
-                    {messages.client.accompaniment} <span className="text-[#9C3D3D]">*</span>
+                    {messages.client.accompaniment}{" "}
+                    <span className="font-normal text-[var(--color-sage)]">
+                      ({locale === "fr" ? "inclus" : "included"})
+                    </span>{" "}
+                    <span className="text-[#9C3D3D]">*</span>
                   </FieldLabel>
                   <Select
                     value={selectedAccompanimentId ?? ""}
@@ -310,9 +326,28 @@ export function MenuItemCard({
                     {sortedAccompaniments.map((accompaniment) => (
                       <option key={accompaniment.id} value={accompaniment.id}>
                         {accompaniment.nom}
-                        {accompaniment.prix_supplement > 0
-                          ? ` (+${formatCurrency(accompaniment.prix_supplement, locale)})`
-                          : ""}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+              ) : null}
+
+              {needsAccompaniment && supplementOptions.length > 0 ? (
+                <div>
+                  <FieldLabel>
+                    {locale === "fr" ? "Supplément" : "Extra side"}{" "}
+                    <span className="font-normal text-[var(--color-black)]/45">
+                      ({locale === "fr" ? "facultatif, payant" : "optional, paid"})
+                    </span>
+                  </FieldLabel>
+                  <Select
+                    value={selectedSupplementId ?? ""}
+                    onChange={(event) => setSelectedSupplementId(event.target.value || null)}
+                  >
+                    <option value="">{locale === "fr" ? "Aucun supplément" : "No extra"}</option>
+                    {supplementOptions.map((supplement) => (
+                      <option key={supplement.id} value={supplement.id}>
+                        {supplement.nom} (+{formatCurrency(supplement.prix_supplement, locale)})
                       </option>
                     ))}
                   </Select>
@@ -355,7 +390,7 @@ export function MenuItemCard({
               </div>
 
               <Button type="button" onClick={confirmFromSheet} className="w-full rounded-2xl py-3 text-base">
-                {messages.client.addToCart} · {formatCurrency((discountedPrice + (selectedAccompaniment?.prix_supplement ?? 0)) * quantity, locale)}
+                {messages.client.addToCart} · {formatCurrency((discountedPrice + (selectedSupplement?.prix_supplement ?? 0)) * quantity, locale)}
               </Button>
             </div>
           </div>

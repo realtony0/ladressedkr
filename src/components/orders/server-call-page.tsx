@@ -71,7 +71,7 @@ export function ServerCallPage({ tableId }: { tableId: string }) {
     <PageShell
       title={messages.client.callServer}
       subtitle={`${messages.common.table} ${tableId} · Notification envoyée en temps réel au dashboard cuisine.`}
-      className="pb-28 lg:pb-8"
+      className="pb-10"
     >
       <ClientFlowNav tableId={tableId} />
 

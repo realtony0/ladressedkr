@@ -27,7 +27,8 @@ export function CartPage({ tableId }: { tableId: string }) {
   const total = useMemo(
     () =>
       lines.reduce(
-        (sum, line) => sum + (line.pizzaSizePrice + line.accompanimentPrice) * line.quantity,
+        (sum, line) =>
+          sum + (line.pizzaSizePrice + line.accompanimentPrice + line.supplementPrice) * line.quantity,
         0,
       ),
     [lines],
@@ -51,6 +52,7 @@ export function CartPage({ tableId }: { tableId: string }) {
             quantity: line.quantity,
             note: line.note,
             accompanimentId: line.accompanimentId,
+            supplementId: line.supplementId,
             pizzaSizeId: line.pizzaSizeId,
           })),
         }),
@@ -88,7 +90,7 @@ export function CartPage({ tableId }: { tableId: string }) {
     <PageShell
       title={messages.client.cart}
       subtitle={`${messages.common.table} ${tableId}`}
-      className="pb-28 lg:pb-8"
+      className="pb-10"
     >
       <ClientFlowNav tableId={tableId} />
 
@@ -108,13 +110,23 @@ export function CartPage({ tableId }: { tableId: string }) {
                       <p className="break-words font-semibold text-[var(--color-dark-green)]">{line.item.nom}</p>
                       {line.pizzaSizeLabel ? <p className="break-words text-xs text-[var(--color-black)]/65">Format: {line.pizzaSizeLabel}</p> : null}
                       {line.accompanimentLabel ? (
-                        <p className="break-words text-xs text-[var(--color-black)]/65">Accompagnement: {line.accompanimentLabel}</p>
+                        <p className="break-words text-xs text-[var(--color-black)]/65">
+                          Accompagnement: {line.accompanimentLabel} ({locale === "fr" ? "inclus" : "included"})
+                        </p>
+                      ) : null}
+                      {line.supplementLabel ? (
+                        <p className="break-words text-xs text-[var(--color-black)]/65">
+                          Supplément: {line.supplementLabel} (+{formatCurrency(line.supplementPrice, locale)})
+                        </p>
                       ) : null}
                       {line.note ? <p className="break-words text-xs text-[var(--color-black)]/65">Note: {line.note}</p> : null}
                     </div>
                     <div className="shrink-0 text-right">
                       <p className="font-bold text-[var(--color-dark-green)]">
-                        {formatCurrency((line.pizzaSizePrice + line.accompanimentPrice) * line.quantity, locale)}
+                        {formatCurrency(
+                          (line.pizzaSizePrice + line.accompanimentPrice + line.supplementPrice) * line.quantity,
+                          locale,
+                        )}
                       </p>
                       <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
                         <Button
