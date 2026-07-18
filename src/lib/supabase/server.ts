@@ -23,9 +23,19 @@ export async function getServerSupabase() {
         return cookieStore.getAll();
       },
       setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          cookieStore.set(name, value, options);
-        });
+        // This client is used from Server Components (layouts/pages), where
+        // Next.js does not allow mutating cookies — calling cookieStore.set()
+        // here does not persist to the response and can wipe the existing
+        // cookie instead of leaving it alone. Session refresh/persistence is
+        // handled by middleware.ts, which runs first and can write cookies
+        // safely; this is the documented-safe no-op for the read-only path.
+        try {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options);
+          });
+        } catch {
+          // Expected when called during Server Component rendering — ignore.
+        }
       },
     },
   });
