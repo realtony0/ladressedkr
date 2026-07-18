@@ -18,6 +18,7 @@ import {
 } from "@/lib/data/menu";
 import { resolveActiveTableByNumber } from "@/lib/data/tables";
 import { formatCurrency, normalizeAllergen } from "@/lib/helpers/format";
+import { getOrderHistory } from "@/lib/helpers/session-history";
 import { DEFAULT_RESTAURANT_ID } from "@/lib/supabase/env";
 import { getBrowserSupabase } from "@/lib/supabase/browser";
 import { useCart } from "@/providers/cart-provider";
@@ -255,10 +256,21 @@ function MenuBoard({ tableId }: { tableId: string }) {
         return;
       }
 
+      // On ne demande que les commandes de CE téléphone (IDs stockés en local),
+      // pour que le badge "Suivre ma commande" ne montre jamais celles des autres.
+      const ownOrderIds = getOrderHistory(tableId);
+      if (ownOrderIds.length === 0) {
+        setActiveOrder(null);
+        setActiveOrderCount(0);
+        setLoadingActiveOrder(false);
+        return;
+      }
+
       setLoadingActiveOrder(true);
       const params = new URLSearchParams({
         tableNumber: tableId,
         accessToken,
+        historyIds: ownOrderIds.join(","),
       });
       if (DEFAULT_RESTAURANT_ID) {
         params.set("restaurantId", DEFAULT_RESTAURANT_ID);
