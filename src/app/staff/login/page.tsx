@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/common/button";
 import { Card, CardTitle } from "@/components/common/card";
@@ -14,7 +13,6 @@ import { useNotifications } from "@/providers/notifications-provider";
 import type { Role } from "@/types/domain";
 
 export default function StaffLoginPage() {
-  const router = useRouter();
   const { messages } = useI18n();
   const { notifyError, notifySuccess } = useNotifications();
 
@@ -75,8 +73,10 @@ export default function StaffLoginPage() {
     }
 
     notifySuccess("Connexion réussie");
-    router.push(nextPath && nextPath.startsWith("/") ? nextPath : routeForRole(role));
-    router.refresh();
+    // Full navigation (not router.push) so the server always sees the
+    // just-issued session cookie on the very first request — a client-side
+    // transition can otherwise race the cookie write and bounce back to login.
+    window.location.href = nextPath && nextPath.startsWith("/") ? nextPath : routeForRole(role);
   }
 
   return (
