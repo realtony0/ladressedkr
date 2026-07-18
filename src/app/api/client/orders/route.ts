@@ -64,34 +64,27 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Table introuvable." }, { status: 404 });
   }
 
-  const activeResult = await supabase
-    .from("orders")
-    .select("id, statut, heure, total, eta_minutes")
-    .eq("table_id", table.id)
-    .in("statut", ["received", "preparing"])
-    .order("heure", { ascending: false })
-    .limit(25);
-
-  if (activeResult.error) {
-    return NextResponse.json({ error: activeResult.error.message }, { status: 500 });
-  }
-
+  // IMPORTANT confidentialité : on ne renvoie QUE les commandes de CE client
+  // (les IDs stockés localement sur son téléphone lors de la commande), jamais
+  // toutes les commandes de la table. Sans ça, chaque client voyait les
+  // commandes des autres.
+  let activeOrders: unknown[] = [];
   let historyOrders: unknown[] = [];
 
   if (historyIds.length > 0) {
-    const historyResult = await supabase
+    const ordersResult = await supabase
       .from("orders")
       .select("id, statut, heure, total, eta_minutes, rating:ratings(id, note, commentaire)")
       .eq("table_id", table.id)
       .in("id", historyIds)
       .order("heure", { ascending: false });
 
-    if (historyResult.error) {
-      return NextResponse.json({ error: historyResult.error.message }, { status: 500 });
+    if (ordersResult.error) {
+      return NextResponse.json({ error: ordersResult.error.message }, { status: 500 });
     }
 
-    const rows = (historyResult.data ?? []) as unknown as HistoryOrderRaw[];
-    historyOrders = rows.map((order) => {
+    const rows = (ordersResult.data ?? []) as unknown as HistoryOrderRaw[];
+    const mapped = rows.map((order) => {
       const ratingRelation = Array.isArray(order.rating) ? order.rating[0] : order.rating;
       return {
         id: order.id,
@@ -104,6 +97,11 @@ export async function GET(request: Request) {
         rating_commentaire: ratingRelation?.commentaire ?? null,
       };
     });
+
+    activeOrders = mapped.filter(
+      (order) => order.statut === "received" || order.statut === "preparing",
+    );
+    historyOrders = mapped;
   }
 
   return NextResponse.json(
@@ -112,7 +110,7 @@ export async function GET(request: Request) {
         id: table.id,
         numero: table.numero,
       },
-      activeOrders: activeResult.data ?? [],
+      activeOrders,
       historyOrders,
     },
     {
