@@ -1,6 +1,14 @@
-const CACHE_NAME = "ladresse-cache-v2";
+const CACHE_NAME = "ladresse-cache-v3";
 const APP_SHELL = ["/", "/manifest.webmanifest", "/icon.svg"];
 const STATIC_PREFIXES = ["/_next/static/", "/icon.svg", "/manifest.webmanifest"];
+
+// Espaces staff : jamais mis en cache ni servis hors-ligne, pour qu'un client
+// ne puisse jamais tomber sur une page cuisine/admin figée en cache.
+const STAFF_PREFIXES = ["/admin", "/cuisine", "/proprio", "/serveur", "/staff"];
+
+function isStaffPath(pathname) {
+  return STAFF_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -24,6 +32,11 @@ self.addEventListener("fetch", (event) => {
 
   const requestUrl = new URL(event.request.url);
   if (requestUrl.origin !== self.location.origin) {
+    return;
+  }
+
+  // Staff routes: always network, never cache, never offline fallback.
+  if (isStaffPath(requestUrl.pathname)) {
     return;
   }
 

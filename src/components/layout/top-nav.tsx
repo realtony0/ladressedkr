@@ -104,12 +104,9 @@ export function TopNav() {
               {link.label}
             </Link>
           ))}
-          <Link
-            href="/staff/login"
-            className="rounded-full px-3 py-1.5 text-xs font-semibold text-[var(--color-black)]/50 transition-colors hover:text-[var(--color-dark-green)]"
-          >
-            {messages.nav.staffArea}
-          </Link>
+          {/* Pas de lien "Espace équipe" visible : les clients ne doivent pas
+              voir l'accès staff. Le personnel se rend sur /staff/login en
+              tapant l'adresse directement. */}
           <LanguageToggle />
         </nav>
       </div>
