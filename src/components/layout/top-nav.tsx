@@ -59,6 +59,7 @@ export function TopNav() {
             ) : null}
             <Link
               href="/staff/logout"
+              prefetch={false}
               className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-[var(--color-dark-green)] transition-colors hover:bg-[var(--color-light-gray)]"
             >
               <LogOut className="h-3.5 w-3.5" />
