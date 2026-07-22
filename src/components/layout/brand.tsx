@@ -20,7 +20,7 @@ export function Brand({
   const content = (
     <span className="flex items-center gap-2">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/brand/logo-mark.png" alt="" className={`${mark} rounded-lg`} />
+      <img src="/brand/logo-mark.png" alt="" className={`${mark} rounded-full`} />
       <span className={`font-logo leading-none text-[var(--color-dark-green)] ${text}`}>
         L’Amazonia
       </span>
