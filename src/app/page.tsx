@@ -37,9 +37,12 @@ export default function Home() {
 
         <div className="mx-auto flex min-h-[72vh] w-full max-w-7xl flex-col items-center justify-center px-4 py-20 text-center md:px-6">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/logo-cream.png" alt="L'Amazonia" className="h-24 w-auto md:h-28" />
-          <p className="mt-4 font-logo text-lg text-[var(--color-cream)]/90">L&apos;Amazonia</p>
-          <h1 className="mt-3 font-title text-4xl text-white sm:text-5xl md:text-6xl">
+          <img
+            src="/brand/logo-wordmark.png"
+            alt="L'Amazonia"
+            className="w-[min(78vw,520px)] max-w-full drop-shadow-[0_2px_20px_rgba(0,0,0,0.35)]"
+          />
+          <h1 className="mt-6 font-title text-3xl text-white sm:text-4xl md:text-5xl">
             Plus qu&apos;une table,
             <br />
             une expérience.
