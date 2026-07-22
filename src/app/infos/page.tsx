@@ -8,7 +8,7 @@ const HOURS = [{ day: "Tous les jours", value: "9h00 – 02h00" }];
 
 export default function InfosRoute() {
   return (
-    <PageShell title="Infos & accès" subtitle="Horaires, adresse et contact de L'Adresse Dakar.">
+    <PageShell title="Infos & accès" subtitle="Horaires, adresse et contact de L'Amazonia.">
       <div className="grid gap-5 lg:grid-cols-2">
         <Card>
           <CardTitle className="flex items-center gap-2 font-heading text-2xl">

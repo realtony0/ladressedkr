@@ -27,7 +27,7 @@ export function SetupAdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [prenom, setPrenom] = useState("Admin");
-  const [nom, setNom] = useState("L'Adresse");
+  const [nom, setNom] = useState("L'Amazonia");
   const [email, setEmail] = useState(PRIMARY_ADMIN_EMAIL);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

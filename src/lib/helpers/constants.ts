@@ -1,7 +1,7 @@
 import type { CategorySlug, OrderStatus, Role, ServerCallReason } from "@/types/domain";
 
 export const BRAND = {
-  name: "L'Adresse Dakar",
+  name: "L'Amazonia",
   colors: {
     sage: "#7A9E7E",
     darkGreen: "#2D4A2D",

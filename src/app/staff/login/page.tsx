@@ -54,7 +54,7 @@ export default function StaffLoginPage() {
       <Card className="mx-auto max-w-md">
         <div className="mb-4 flex justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/logo-mark.png" alt="L'Adresse Dakar" className="h-16 w-16 rounded-2xl" />
+          <img src="/brand/logo-mark.png" alt="L'Amazonia" className="h-16 w-16 rounded-2xl" />
         </div>
         <CardTitle className="text-center font-heading text-3xl">Espace équipe</CardTitle>
 

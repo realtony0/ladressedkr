@@ -79,7 +79,7 @@ export function OwnerReportsPage() {
   function exportPdf() {
     const doc = new jsPDF();
     doc.setFontSize(18);
-    doc.text("L'Adresse Dakar - Rapport", 14, 18);
+    doc.text("L'Amazonia - Rapport", 14, 18);
     doc.setFontSize(11);
     doc.text(`Période: ${fromDate} au ${toDate}`, 14, 26);
     doc.text(`CA total: ${formatCurrency(totalRevenue, locale)}`, 14, 33);
