@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  --color-sage: #7a9e7e;
-  --color-dark-green: #2d4a2d;
+  /* Identité de marque Amazonia : vert olive profond + crème + doux doré */
+  --color-sage: #8a8654;
+  --color-dark-green: #3d381a;
   --color-cream: #f5f2ec;
   --color-black: #1a1a1a;
   --color-gold: #c9a84c;
@@ -10,7 +11,7 @@
   --font-script: "Snell Roundhand", "Brush Script MT", "Segoe Script", cursive;
   --font-sans: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --font-serif: "Bodoni 72", "Didot", "Times New Roman", serif;
-  --gradient-main: radial-gradient(circle at top right, rgba(122, 158, 126, 0.24), transparent 42%),
+  --gradient-main: radial-gradient(circle at top right, rgba(138, 134, 84, 0.22), transparent 42%),
     radial-gradient(circle at bottom left, rgba(201, 168, 76, 0.18), transparent 35%);
 }
 
@@ -92,11 +93,11 @@ button {
 
 /* Soft, layered shadows for a modern ordering-app feel */
 .shadow-card {
-  box-shadow: 0 1px 2px rgba(45, 74, 45, 0.04), 0 8px 24px -12px rgba(45, 74, 45, 0.18);
+  box-shadow: 0 1px 2px rgba(61, 56, 26, 0.04), 0 8px 24px -12px rgba(61, 56, 26, 0.18);
 }
 
 .shadow-float {
-  box-shadow: 0 8px 30px -8px rgba(45, 74, 45, 0.28);
+  box-shadow: 0 8px 30px -8px rgba(61, 56, 26, 0.28);
 }
 
 /* Interactive product card that lifts on hover/press */
@@ -106,7 +107,7 @@ button {
 
 .card-interactive:hover {
   transform: translateY(-3px);
-  box-shadow: 0 14px 32px -14px rgba(45, 74, 45, 0.32);
+  box-shadow: 0 14px 32px -14px rgba(61, 56, 26, 0.32);
 }
 
 .card-interactive:active {
