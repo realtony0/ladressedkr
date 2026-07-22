@@ -1011,7 +1011,7 @@ export function KitchenDashboard({ historyOnly = false }: { historyOnly?: boolea
         <div ref={printRef}>
           {printOrder ? (
             <div style={{ fontFamily: "sans-serif", width: "300px", padding: "10px" }}>
-              <h2 style={{ margin: 0 }}>L&apos;Adresse Dakar</h2>
+              <h2 style={{ margin: 0 }}>L&apos;Amazonia</h2>
               <p style={{ margin: "6px 0" }}>Ticket #{printOrder.id.slice(0, 8)}</p>
               <p style={{ margin: "6px 0" }}>Table {printOrder.table?.numero ?? "-"}</p>
               <p style={{ margin: "6px 0" }}>{formatDateTime(printOrder.heure, locale)}</p>

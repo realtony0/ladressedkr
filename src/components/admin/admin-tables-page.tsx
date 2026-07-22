@@ -340,8 +340,8 @@ export function AdminTablesPage() {
       .map(
         (poster) => `
         <div class="poster">
-          <img class="logo" src="${origin}/brand/logo-mark.png" alt="L'Adresse Dakar" />
-          <div class="brand">L'Adresse Dakar</div>
+          <img class="logo" src="${origin}/brand/logo-mark.png" alt="L'Amazonia" />
+          <div class="brand">L'Amazonia</div>
           <div class="table">Table ${poster.numero}</div>
           <div class="qrbox"><img class="qr" src="${poster.qr}" alt="QR table ${poster.numero}" /></div>
           <div class="cta">Scannez pour voir le menu<br/>et commander</div>
@@ -351,7 +351,7 @@ export function AdminTablesPage() {
       .join("");
 
     popup.document.open();
-    popup.document.write(`<html><head><title>Affiches QR — L'Adresse Dakar</title><style>${posterStyles()}</style></head><body>${body}</body></html>`);
+    popup.document.write(`<html><head><title>Affiches QR — L'Amazonia</title><style>${posterStyles()}</style></head><body>${body}</body></html>`);
     popup.document.close();
     popup.focus();
     window.setTimeout(() => popup.print(), 400);

@@ -14,6 +14,6 @@ export const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://ladressedkr.c
 export const QR_BASE_URL = process.env.NEXT_PUBLIC_QR_BASE_URL?.trim() ?? "https://ladressedkr.com";
 const SINGLE_RESTAURANT_FALLBACK_ID = "8f7c1bf8-feb5-4f34-88fb-781f2fd89d55";
 
-// Application mono-restaurant: L'Adresse Dakar.
+// Application mono-restaurant: L'Amazonia.
 export const DEFAULT_RESTAURANT_ID =
   process.env.NEXT_PUBLIC_DEFAULT_RESTAURANT_ID?.trim() || SINGLE_RESTAURANT_FALLBACK_ID;
