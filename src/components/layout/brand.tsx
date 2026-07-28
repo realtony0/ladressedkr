@@ -22,7 +22,7 @@ export function Brand({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/brand/logo-mark.png" alt="" className={`${mark} rounded-full`} />
       <span className={`font-logo leading-none text-[var(--color-dark-green)] ${text}`}>
-        L’Amazonia
+        L’Aura Lounge
       </span>
     </span>
   );

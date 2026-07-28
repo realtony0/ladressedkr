@@ -8,13 +8,13 @@ import { NotificationsProvider } from "@/providers/notifications-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "L'Amazonia — Restaurant à Dakar | Menu & Réservation",
+  title: "L'Aura Lounge — Restaurant à Dakar | Menu & Réservation",
   description:
-    "L'Amazonia, cuisine élégante entre esprit bistro parisien et fraîcheur africaine, au rond-point Ngor. Consultez la carte et réservez votre table en ligne.",
-  applicationName: "L'Amazonia",
+    "L'Aura Lounge, cuisine élégante entre esprit bistro parisien et fraîcheur africaine, au rond-point Ngor. Consultez la carte et réservez votre table en ligne.",
+  applicationName: "L'Aura Lounge",
   manifest: "/manifest.webmanifest",
   openGraph: {
-    title: "L'Amazonia",
+    title: "L'Aura Lounge",
     description: "Plus qu'une table, une expérience. Rond-point Ngor, Dakar.",
     type: "website",
   },
