@@ -38,14 +38,14 @@ export default function Home() {
         <div className="mx-auto flex min-h-[72vh] w-full max-w-7xl flex-col items-center justify-center px-4 py-20 text-center md:px-6">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/brand/logo-mark.png"
+            src="/brand/logo-wordmark.png"
             alt="L'Aura Lounge"
-            className="h-28 w-28 rounded-full drop-shadow-[0_2px_20px_rgba(0,0,0,0.4)] md:h-32 md:w-32"
+            className="w-[min(74vw,460px)] max-w-full drop-shadow-[0_2px_20px_rgba(0,0,0,0.4)]"
           />
-          <p className="mt-5 font-logo text-3xl tracking-wide text-[var(--color-cream)] md:text-4xl">
-            L&apos;Aura Lounge
+          <p className="mt-3 font-logo text-sm uppercase tracking-[0.4em] text-[var(--color-cream)]/85">
+            Lounge
           </p>
-          <h1 className="mt-4 font-title text-3xl text-white sm:text-4xl md:text-5xl">
+          <h1 className="mt-6 font-title text-3xl text-white sm:text-4xl md:text-5xl">
             Plus qu&apos;une table,
             <br />
             une expérience.
