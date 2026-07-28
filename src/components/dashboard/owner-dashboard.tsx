@@ -186,7 +186,7 @@ export function OwnerDashboard() {
   }
 
   return (
-    <PageShell title={messages.owner.dashboard} subtitle="Pilotage global des performances de L'Amazonia.">
+    <PageShell title={messages.owner.dashboard} subtitle="Pilotage global des performances de L'Aura Lounge.">
       {loading ? (
         <Card>{messages.common.loading}</Card>
       ) : (

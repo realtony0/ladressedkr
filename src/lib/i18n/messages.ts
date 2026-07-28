@@ -154,7 +154,7 @@ export const messages: Record<Locale, Messages> = {
       staffArea: "Espace équipe",
     },
     client: {
-      welcome: "Bienvenue à L'Amazonia",
+      welcome: "Bienvenue à L'Aura Lounge",
       menuSubtitle: "Cuisine élégante entre esprit bistro parisien et fraîcheur africaine.",
       searchDish: "Rechercher un plat",
       searchPlaceholder: "Ex: saumon, burger, burrata...",
@@ -274,7 +274,7 @@ export const messages: Record<Locale, Messages> = {
       staffArea: "Team area",
     },
     client: {
-      welcome: "Welcome to L'Amazonia",
+      welcome: "Welcome to L'Aura Lounge",
       menuSubtitle: "Elegant cuisine blending Parisian bistro style with African freshness.",
       searchDish: "Search dish",
       searchPlaceholder: "e.g. salmon, burger, burrata...",

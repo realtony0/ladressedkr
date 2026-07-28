@@ -141,7 +141,7 @@ function reportText(report: Awaited<ReturnType<typeof buildDailyReport>>) {
     : "Aucune vente enregistrée";
 
   return [
-    `Rapport L'Amazonia - ${date}`,
+    `Rapport L'Aura Lounge - ${date}`,
     `CA: ${formatNumber(report.revenue)}`,
     `Commandes: ${report.orderCount}`,
     `Ticket moyen: ${formatNumber(report.avgTicket)}`,
@@ -189,7 +189,7 @@ async function handle(request: Request) {
   const text = reportText(report);
 
   const [emailResult, whatsappResult] = await Promise.all([
-    sendEmail(`Rapport journalier L'Amazonia - ${report.start.toISOString().slice(0, 10)}`, reportHtml(text)),
+    sendEmail(`Rapport journalier L'Aura Lounge - ${report.start.toISOString().slice(0, 10)}`, reportHtml(text)),
     sendWhatsapp(text),
   ]);
 
