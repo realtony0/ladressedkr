@@ -23,6 +23,9 @@ export function CartPage({ tableId }: { tableId: string }) {
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Commande en ligne désactivée : le client compose son panier ici pour
+  // s'y référer, mais doit appeler un serveur pour la passer réellement.
+  const ORDERING_DISABLED = true;
 
   const total = useMemo(
     () =>
@@ -164,14 +167,29 @@ export function CartPage({ tableId }: { tableId: string }) {
             <p className="mt-3 text-2xl font-extrabold text-[var(--color-dark-green)]">{formatCurrency(total, locale)}</p>
             {error ? <p className="mt-2 rounded-xl bg-[#ffe4e4] p-2 text-sm text-[#8b2424]">{error}</p> : null}
 
-            <Button
-              type="button"
-              className="mt-4 w-full"
-              onClick={placeOrder}
-              disabled={!isReady || submitting || lines.length === 0}
-            >
-              {submitting ? messages.common.loading : messages.client.orderNow}
-            </Button>
+            {ORDERING_DISABLED ? (
+              <>
+                <p className="mt-4 rounded-xl bg-[#f0ebe0] p-3 text-sm text-[var(--color-black)]/75">
+                  {locale === "fr"
+                    ? "La commande en ligne n'est pas disponible pour le moment. Appelle un serveur pour passer commande avec ce panier."
+                    : "Online ordering isn't available right now. Call a server to place this order."}
+                </p>
+                <Link href={`/${tableId}/appel`} className="mt-3 block">
+                  <Button type="button" className="w-full">
+                    {messages.client.callServer}
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <Button
+                type="button"
+                className="mt-4 w-full"
+                onClick={placeOrder}
+                disabled={!isReady || submitting || lines.length === 0}
+              >
+                {submitting ? messages.common.loading : messages.client.orderNow}
+              </Button>
+            )}
 
             <Link href={`/${tableId}`} className="mt-3 block">
               <Button type="button" variant="secondary" className="w-full">
