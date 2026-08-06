@@ -168,18 +168,11 @@ export function CartPage({ tableId }: { tableId: string }) {
             {error ? <p className="mt-2 rounded-xl bg-[#ffe4e4] p-2 text-sm text-[#8b2424]">{error}</p> : null}
 
             {ORDERING_DISABLED ? (
-              <>
-                <p className="mt-4 rounded-xl bg-[#f0ebe0] p-3 text-sm text-[var(--color-black)]/75">
-                  {locale === "fr"
-                    ? "La commande en ligne n'est pas disponible pour le moment. Appelle un serveur pour passer commande avec ce panier."
-                    : "Online ordering isn't available right now. Call a server to place this order."}
-                </p>
-                <Link href={`/${tableId}/appel`} className="mt-3 block">
-                  <Button type="button" className="w-full">
-                    {messages.client.callServer}
-                  </Button>
-                </Link>
-              </>
+              <p className="mt-4 rounded-xl bg-[#f0ebe0] p-3 text-sm text-[var(--color-black)]/75">
+                {locale === "fr"
+                  ? "La commande en ligne n'est pas disponible pour le moment. Adresse-toi directement à un membre du personnel présent en salle pour passer commande avec ce panier."
+                  : "Online ordering isn't available right now. Please speak directly to a staff member on site to place this order."}
+              </p>
             ) : (
               <Button
                 type="button"
