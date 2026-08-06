@@ -24,13 +24,8 @@ export function SiteFooter() {
             <p className="text-sm font-bold uppercase tracking-wide text-white">Contact</p>
             <ul className="mt-4 space-y-2 text-sm text-white/70">
               <li>
-                <a href="tel:+221774392199" className="hover:text-white">
-                  +221 77 439 21 99
-                </a>
-              </li>
-              <li>
-                <a href="tel:+221776266439" className="hover:text-white">
-                  +221 77 626 64 39
+                <a href="tel:+221338169599" className="hover:text-white">
+                  +221 33 816 95 99
                 </a>
               </li>
               <li>
@@ -44,8 +39,8 @@ export function SiteFooter() {
                 </a>
               </li>
               <li>
-                <a href="mailto:ladresse.sn@outlook.fr" className="hover:text-white">
-                  ladresse.sn@outlook.fr
+                <a href="mailto:contact@lauralounge.com" className="hover:text-white">
+                  contact@lauralounge.com
                 </a>
               </li>
             </ul>

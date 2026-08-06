@@ -44,16 +44,10 @@ export default function InfosRoute() {
 
           <div className="mt-6 space-y-2">
             <a
-              href="tel:+221774392199"
+              href="tel:+221338169599"
               className="flex items-center gap-2 text-sm font-semibold text-[var(--color-dark-green)]"
             >
-              <Phone className="h-4 w-4" /> +221 77 439 21 99
-            </a>
-            <a
-              href="tel:+221776266439"
-              className="flex items-center gap-2 text-sm font-semibold text-[var(--color-dark-green)]"
-            >
-              <Phone className="h-4 w-4" /> +221 77 626 64 39
+              <Phone className="h-4 w-4" /> +221 33 816 95 99
             </a>
             <a
               href="https://www.instagram.com/ladresse.lounge.dkr"
@@ -64,10 +58,10 @@ export default function InfosRoute() {
               <Instagram className="h-4 w-4" /> @ladresse.lounge.dkr
             </a>
             <a
-              href="mailto:ladresse.sn@outlook.fr"
+              href="mailto:contact@lauralounge.com"
               className="flex items-center gap-2 text-sm font-semibold text-[var(--color-dark-green)]"
             >
-              <Mail className="h-4 w-4" /> ladresse.sn@outlook.fr
+              <Mail className="h-4 w-4" /> contact@lauralounge.com
             </a>
           </div>
         </Card>
