@@ -109,6 +109,16 @@ export function TopNav() {
               {link.label}
             </Link>
           ))}
+          {/* Ouvre l'affichage TV plein écran dans un nouvel onglet : cette
+              page n'a pas de navigation pour en revenir. */}
+          <a
+            href="/ecran"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-[var(--color-dark-green)] transition-colors hover:bg-[var(--color-light-gray)]"
+          >
+            Écran TV
+          </a>
           {/* Pas de lien "Espace équipe" visible : les clients ne doivent pas
               voir l'accès staff. Le personnel se rend sur /staff/login en
               tapant l'adresse directement. */}
