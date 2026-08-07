@@ -28,6 +28,11 @@ export function TopNav() {
   const pathname = usePathname();
   const { messages } = useI18n();
 
+  // Affichage TV plein écran : aucune interface, juste le logo.
+  if (pathname.startsWith("/ecran")) {
+    return null;
+  }
+
   // Client menu/order pages: just the logo + language toggle.
   if (isClientOrderRoute(pathname)) {
     return (

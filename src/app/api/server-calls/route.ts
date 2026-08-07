@@ -13,7 +13,16 @@ interface CreateServerCallBody {
   restaurantId?: string;
 }
 
-export async function POST(request: Request) {
+// Appel cuisine désactivé pour l'instant, en même temps que l'envoi de
+// commande en ligne.
+export async function POST() {
+  return NextResponse.json(
+    { error: "L'appel de la cuisine n'est plus disponible pour le moment." },
+    { status: 403 },
+  );
+}
+
+async function _disabledCreateServerCall(request: Request) {
   const supabase = getServiceSupabase();
   if (!supabase) {
     return NextResponse.json({ error: "Supabase non configuré" }, { status: 500 });

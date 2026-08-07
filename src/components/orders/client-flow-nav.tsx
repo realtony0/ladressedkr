@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BellRing, History, Menu, ShoppingBag } from "lucide-react";
+import { History, Menu, ShoppingBag } from "lucide-react";
 
 import { cn } from "@/lib/helpers/cn";
 import { useCartOptional } from "@/providers/cart-provider";
@@ -21,12 +21,13 @@ export function ClientFlowNav({ tableId }: { tableId: string }) {
   const cart = useCartOptional();
   const cartQty = cart?.lines.reduce((sum, line) => sum + line.quantity, 0) ?? 0;
 
+  // La cuisine (envoi de commande + "Appeler la cuisine") est désactivée
+  // pour l'instant : cet onglet n'apparaît plus dans la navigation client.
   const base = `/${tableId}`;
   const tabs = [
     { href: base, label: messages.nav.menu, icon: Menu, isRoot: true, badge: 0 },
     { href: `${base}/panier`, label: messages.client.cart, icon: ShoppingBag, isRoot: false, badge: cartQty },
     { href: `${base}/commandes`, label: messages.client.orderHistory, icon: History, isRoot: false, badge: 0 },
-    { href: `${base}/appel`, label: messages.client.callServer, icon: BellRing, isRoot: false, badge: 0 },
   ];
 
   return (

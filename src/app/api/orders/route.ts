@@ -26,7 +26,17 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
-export async function POST(request: Request) {
+// Commande en ligne désactivée : les clients consultent le menu et
+// appellent le serveur pour commander, mais ne peuvent plus envoyer une
+// commande directement en cuisine depuis le site.
+export async function POST() {
+  return NextResponse.json(
+    { error: "La commande en ligne n'est plus disponible. Merci d'appeler un serveur pour passer commande." },
+    { status: 403 },
+  );
+}
+
+async function _disabledPlaceOrder(request: Request) {
   const supabase = getServiceSupabase();
   if (!supabase) {
     return NextResponse.json(

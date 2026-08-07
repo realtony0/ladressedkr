@@ -34,7 +34,7 @@ export const CaisseTicket = forwardRef<HTMLDivElement, { ticket: CaisseTicketDat
       <div ref={ref} className="hidden print:block font-mono text-xs text-black bg-white w-[72mm] p-2">
         <p className="text-center font-bold text-sm">L&apos;ADRESSE DAKAR</p>
         <p className="text-center text-[10px]">Rond-point Ngor, Dakar</p>
-        <p className="text-center text-[10px]">ladresse.sn@outlook.fr</p>
+        <p className="text-center text-[10px]">contact@lauralounge.com</p>
         <div className="border-t border-dashed border-black my-2" />
 
         <div className="flex justify-between">

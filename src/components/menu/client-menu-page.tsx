@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowUp, BellRing, History } from "lucide-react";
+import { ArrowUp, History } from "lucide-react";
 
 import { Button } from "@/components/common/button";
 import { Card } from "@/components/common/card";
@@ -508,13 +508,6 @@ function MenuBoard({ tableId }: { tableId: string }) {
                   {activeOrderCount}
                 </span>
               ) : null}
-            </Link>
-            <Link
-              href={`/${tableId}/appel`}
-              aria-label={messages.client.callServer}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-light-gray)] bg-white text-[var(--color-dark-green)] shadow-sm"
-            >
-              <BellRing className="h-5 w-5" />
             </Link>
           </div>
         </div>
