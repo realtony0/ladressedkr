@@ -12,6 +12,7 @@ import { MenuItemCard } from "@/components/menu/menu-item-card";
 import {
   activePromotionForItem,
   getFallbackCatalog,
+  groupItemsBySubcategory,
   isBrunchCurrentlyOpen,
   loadCatalog,
   type MenuCatalog,
@@ -45,7 +46,6 @@ interface ClientOrderPreview {
   eta_minutes: number | null;
   total: number;
 }
-
 
 function MenuBoard({ tableId }: { tableId: string }) {
   const { messages, locale } = useI18n();
@@ -615,37 +615,52 @@ function MenuBoard({ tableId }: { tableId: string }) {
               );
             }
 
+            const groups = groupItemsBySubcategory(
+              section.items,
+              catalog.subcategories,
+              section.category.id,
+            );
+
             return (
-              <section key={section.category.id} id={`cat-${section.category.id}`} className="scroll-mt-28 space-y-3">
+              <section key={section.category.id} id={`cat-${section.category.id}`} className="scroll-mt-28 space-y-5">
                 <h2 className="font-title text-2xl text-[var(--color-dark-green)]">{section.category.nom}</h2>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {section.items.map((item) => (
-                    <MenuItemCard
-                      key={item.id}
-                      item={item}
-                      categorySlug={section.category.slug}
-                      accompaniments={catalog.accompaniments}
-                      pizzaSizes={catalog.pizzaSizes}
-                      promotion={activePromotionForItem(item.id, catalog.promotions)}
-                      onAdd={(payload) => {
-                        addLine({
-                          item,
-                          note: payload.note,
-                          accompanimentId: payload.accompanimentId,
-                          accompanimentLabel: payload.accompanimentLabel,
-                          accompanimentPrice: payload.accompanimentPrice,
-                          supplementId: payload.supplementId,
-                          supplementLabel: payload.supplementLabel,
-                          supplementPrice: payload.supplementPrice,
-                          pizzaSizeId: payload.pizzaSizeId,
-                          pizzaSizeLabel: payload.pizzaSizeLabel,
-                          pizzaSizePrice: payload.pizzaSizePrice,
-                        });
-                        setLastAddedDish(item.nom);
-                      }}
-                    />
-                  ))}
-                </div>
+                {groups.map((group) => (
+                  <div key={group.subcategory?.id ?? "sans-sous-categorie"} className="space-y-3">
+                    {group.subcategory ? (
+                      <h3 className="text-sm font-bold uppercase tracking-wide text-[var(--color-black)]/60">
+                        {group.subcategory.nom}
+                      </h3>
+                    ) : null}
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {group.items.map((item) => (
+                        <MenuItemCard
+                          key={item.id}
+                          item={item}
+                          categorySlug={section.category.slug}
+                          accompaniments={catalog.accompaniments}
+                          pizzaSizes={catalog.pizzaSizes}
+                          promotion={activePromotionForItem(item.id, catalog.promotions)}
+                          onAdd={(payload) => {
+                            addLine({
+                              item,
+                              note: payload.note,
+                              accompanimentId: payload.accompanimentId,
+                              accompanimentLabel: payload.accompanimentLabel,
+                              accompanimentPrice: payload.accompanimentPrice,
+                              supplementId: payload.supplementId,
+                              supplementLabel: payload.supplementLabel,
+                              supplementPrice: payload.supplementPrice,
+                              pizzaSizeId: payload.pizzaSizeId,
+                              pizzaSizeLabel: payload.pizzaSizeLabel,
+                              pizzaSizePrice: payload.pizzaSizePrice,
+                            });
+                            setLastAddedDish(item.nom);
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </section>
             );
           })}
