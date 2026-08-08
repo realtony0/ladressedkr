@@ -83,6 +83,34 @@ export function isBrunchCurrentlyOpen(hours: ServiceHours[]) {
   return isWithinInterval(now, { start, end });
 }
 
+// Les plats sans sous-catégorie forment un premier groupe sans en-tête, pour
+// ne rien changer aux catégories qui n'en utilisent pas.
+export function groupItemsBySubcategory(
+  items: MenuItem[],
+  subcategories: Subcategory[],
+  categoryId: string,
+) {
+  const groups: Array<{ subcategory: Subcategory | null; items: MenuItem[] }> = [];
+
+  const unassigned = items.filter((item) => !item.subcategorie_id);
+  if (unassigned.length > 0) {
+    groups.push({ subcategory: null, items: unassigned });
+  }
+
+  const sortedSubcategories = subcategories
+    .filter((sub) => sub.categorie_id === categoryId)
+    .sort((a, b) => a.ordre - b.ordre);
+
+  for (const sub of sortedSubcategories) {
+    const subItems = items.filter((item) => item.subcategorie_id === sub.id);
+    if (subItems.length > 0) {
+      groups.push({ subcategory: sub, items: subItems });
+    }
+  }
+
+  return groups;
+}
+
 export function activePromotionForItem(itemId: string, promotions: Promotion[]) {
   const now = new Date();
   return promotions.find((promo) => {
