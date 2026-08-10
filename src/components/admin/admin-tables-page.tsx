@@ -344,7 +344,7 @@ export function AdminTablesPage() {
           <div class="brand">L'Aura Lounge</div>
           <div class="table">Table ${poster.numero}</div>
           <div class="qrbox"><img class="qr" src="${poster.qr}" alt="QR table ${poster.numero}" /></div>
-          <div class="cta">Scannez pour voir le menu<br/>et commander</div>
+          <div class="cta">Scannez pour découvrir<br/>notre carte</div>
           <div class="url">${poster.display}</div>
         </div>`,
       )
