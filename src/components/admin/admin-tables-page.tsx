@@ -288,24 +288,76 @@ export function AdminTablesPage() {
     void loadTables();
   }
 
+  // Carte crème bordée d'olive, centrée sur une page A4, avec un trait de
+  // découpe en pointillés autour. Le nom du restaurant tient la vedette ; le
+  // numéro de table reste en pied, discret mais lisible — sans lui, deux
+  // cartes découpées ne sont plus différenciables alors que chaque QR porte
+  // le jeton d'une table précise.
   function posterStyles() {
     return `
       @page { size: A4; margin: 0; }
-      * { box-sizing: border-box; }
-      body { margin: 0; font-family: Georgia, 'Times New Roman', serif; color: #1a1a1a; }
-      .poster {
-        width: 100%; min-height: 100vh; padding: 48px 40px;
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        text-align: center; page-break-after: always;
+      * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body { margin: 0; background: #fff; }
+      .sheet {
+        width: 210mm; height: 297mm;
+        display: flex; align-items: center; justify-content: center;
+        page-break-after: always;
       }
-      .poster:last-child { page-break-after: auto; }
-      .logo { width: 96px; height: 96px; border-radius: 18px; }
-      .brand { margin-top: 16px; font-size: 26px; letter-spacing: 1px; color: #2d4a2d; }
-      .table { margin: 6px 0 26px; font-size: 44px; font-weight: bold; color: #2d4a2d; }
-      .qrbox { padding: 18px; border: 2px solid #e7e2d6; border-radius: 20px; }
-      .qr { width: 320px; height: 320px; display: block; }
-      .cta { margin-top: 26px; font-size: 22px; color: #1a1a1a; }
-      .url { margin-top: 12px; font-family: Arial, sans-serif; font-size: 14px; color: #9a9a9a; }
+      .sheet:last-child { page-break-after: auto; }
+      .cut {
+        width: 128mm; height: 182mm; padding: 3mm;
+        border: 1px dashed #b9b4a4; border-radius: 12mm; position: relative;
+      }
+      .cut::after {
+        content: "\\2702"; position: absolute; top: -4.6mm; left: 50%;
+        transform: translateX(-50%); background: #fff; padding: 0 2mm;
+        font-size: 9pt; color: #b9b4a4;
+      }
+      .card {
+        width: 100%; height: 100%; border-radius: 9mm;
+        background: #f5f2ec; border: 0.6mm solid #3d381a;
+        padding: 10mm 8mm 6mm;
+        display: flex; flex-direction: column; align-items: center;
+        text-align: center; position: relative; overflow: hidden;
+      }
+      .card::before {
+        content: ""; position: absolute; inset: 0;
+        background:
+          radial-gradient(circle at 82% 6%, rgba(138,134,84,.20), transparent 45%),
+          radial-gradient(circle at 12% 96%, rgba(201,168,76,.18), transparent 42%);
+      }
+      .card > * { position: relative; }
+      .mark { width: 24mm; height: 24mm; border-radius: 50%; display: block; }
+      .name {
+        font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 600;
+        color: #3d381a; font-size: 25pt; line-height: 1.1;
+        margin-top: 4mm; letter-spacing: .4pt;
+      }
+      .rule { display: flex; align-items: center; gap: 2.5mm; margin: 3.5mm 0 1mm; }
+      .rule i { display: block; width: 15mm; height: .35mm; background: #8a8654; opacity: .55; }
+      .rule b { width: 1.7mm; height: 1.7mm; background: #c9a84c; border-radius: 50%; display: block; }
+      .kicker {
+        font-family: 'Jost', Arial, sans-serif; font-size: 8pt;
+        letter-spacing: 2.6pt; text-transform: uppercase; color: #8a8654;
+      }
+      .qrbox {
+        margin-top: 6mm; background: #fff; border-radius: 7mm;
+        padding: 5mm; border: .3mm solid rgba(61,56,26,.16);
+      }
+      .qr { width: 62mm; height: 62mm; display: block; }
+      .cta {
+        font-family: 'Cormorant Garamond', Georgia, serif;
+        font-size: 16.5pt; color: #3d381a; line-height: 1.35; margin-top: 6mm;
+      }
+      .url {
+        font-family: 'Jost', Arial, sans-serif; font-size: 8.5pt;
+        letter-spacing: 1.5pt; text-transform: uppercase; color: #8a8654; margin-top: 2.5mm;
+      }
+      .spacer { flex: 1; min-height: 3mm; }
+      .tablenum {
+        font-family: 'Jost', Arial, sans-serif; font-weight: 500; font-size: 7pt;
+        letter-spacing: 1.6pt; text-transform: uppercase; color: rgba(61,56,26,.42);
+      }
     `;
   }
 
@@ -328,10 +380,13 @@ export function AdminTablesPage() {
         const targetUrl = canonicalTableQrUrl(table);
         const qr = await QRCode.toDataURL(targetUrl, {
           margin: 1,
-          width: 640,
-          color: { dark: "#1A1A1A", light: "#FFFFFF" },
+          width: 900,
+          errorCorrectionLevel: "H",
+          color: { dark: "#3D381A", light: "#FFFFFF" },
         });
-        const display = targetUrl.replace(/^https?:\/\//, "");
+        // Seul le domaine est imprimé : l'URL complète contient le jeton
+        // d'accès de la table, illisible et inutile à recopier à la main.
+        const display = new URL(targetUrl).host.replace(/^www\./, "");
         return { numero: table.numero, qr, display };
       }),
     );
@@ -339,22 +394,36 @@ export function AdminTablesPage() {
     const body = posters
       .map(
         (poster) => `
-        <div class="poster">
-          <img class="logo" src="${origin}/brand/logo-mark.png" alt="L'Aura Lounge" />
-          <div class="brand">L'Aura Lounge</div>
-          <div class="table">Table ${poster.numero}</div>
+        <div class="sheet"><div class="cut"><div class="card">
+          <img class="mark" src="${origin}/brand/logo-mark.png" alt="" />
+          <div class="name">L&rsquo;Aura Lounge</div>
+          <div class="rule"><i></i><b></b><i></i></div>
+          <div class="kicker">Restaurant &middot; Dakar</div>
           <div class="qrbox"><img class="qr" src="${poster.qr}" alt="QR table ${poster.numero}" /></div>
           <div class="cta">Scannez pour découvrir<br/>notre carte</div>
           <div class="url">${poster.display}</div>
-        </div>`,
+          <div class="spacer"></div>
+          <div class="tablenum">Table ${poster.numero}</div>
+        </div></div></div>`,
       )
       .join("");
 
+    const webFonts =
+      '<link rel="preconnect" href="https://fonts.googleapis.com" />' +
+      '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />' +
+      '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Jost:wght@400;500&display=swap" />';
+
     popup.document.open();
-    popup.document.write(`<html><head><title>Affiches QR — L'Aura Lounge</title><style>${posterStyles()}</style></head><body>${body}</body></html>`);
+    popup.document.write(`<html><head><title>Affiches QR — L'Aura Lounge</title>${webFonts}<style>${posterStyles()}</style></head><body>${body}</body></html>`);
     popup.document.close();
     popup.focus();
-    window.setTimeout(() => popup.print(), 400);
+
+    // Les polices sont chargées depuis le web : imprimer trop tôt sortirait
+    // les affiches dans la police de repli. On attend leur chargement, avec
+    // un délai de sécurité si la promesse n'aboutit jamais.
+    const fontsReady = popup.document.fonts?.ready ?? Promise.resolve();
+    await Promise.race([fontsReady, new Promise((resolve) => window.setTimeout(resolve, 4000))]);
+    window.setTimeout(() => popup.print(), 300);
     notifyInfo("Impression prête", `${posters.length} affiche(s)`);
   }
 
