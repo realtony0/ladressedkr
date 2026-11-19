@@ -8,6 +8,7 @@ import { Button } from "@/components/common/button";
 import { Card, CardTitle } from "@/components/common/card";
 import { PageShell } from "@/components/layout/page-shell";
 import { ClientFlowNav } from "@/components/orders/client-flow-nav";
+import { ONLINE_ORDERING_ENABLED } from "@/lib/helpers/features";
 import { formatCurrency } from "@/lib/helpers/format";
 import { pushOrderHistory } from "@/lib/helpers/session-history";
 import { DEFAULT_RESTAURANT_ID } from "@/lib/supabase/env";
@@ -25,7 +26,7 @@ export function CartPage({ tableId }: { tableId: string }) {
   const [error, setError] = useState<string | null>(null);
   // Commande en ligne désactivée : le client compose son panier ici pour
   // s'y référer, mais doit appeler un serveur pour la passer réellement.
-  const ORDERING_DISABLED = true;
+  const ORDERING_DISABLED = !ONLINE_ORDERING_ENABLED;
 
   const total = useMemo(
     () =>
