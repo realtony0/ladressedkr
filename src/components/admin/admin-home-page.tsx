@@ -16,18 +16,21 @@ import {
 
 import { StatCard } from "@/components/common/card";
 import { PageShell } from "@/components/layout/page-shell";
+import { ONLINE_ORDERING_ENABLED } from "@/lib/helpers/features";
 import { formatCurrency } from "@/lib/helpers/format";
 import { getBrowserSupabase } from "@/lib/supabase/browser";
 import { DEFAULT_RESTAURANT_ID } from "@/lib/supabase/env";
 
+// Ordre d'usage réel : ce qu'on touche tous les jours d'abord, les réglages
+// rares ensuite. La commande en ligne étant en pause, son écran passe en fin
+// de liste plutôt qu'en tête.
 const TILES = [
   {
-    href: "/cuisine",
-    label: "Commandes en direct",
-    description: "Les commandes des clients qui arrivent, en temps réel.",
-    icon: BellRing,
+    href: "/admin/menu",
+    label: "La carte",
+    description: "Changer un prix, une photo, retirer ou ajouter un plat.",
+    icon: UtensilsCrossed,
     accent: true,
-    statKey: "activeOrders" as const,
   },
   {
     href: "/admin/reservations",
@@ -37,16 +40,10 @@ const TILES = [
     statKey: "pendingReservations" as const,
   },
   {
-    href: "/admin/menu",
-    label: "Le menu",
-    description: "Ajouter ou modifier les plats, prix et photos.",
-    icon: UtensilsCrossed,
-  },
-  {
-    href: "/admin/tables",
-    label: "Tables & QR codes",
-    description: "Gérer les tables et imprimer les QR codes.",
-    icon: QrCode,
+    href: "/admin/horaires",
+    label: "Horaires",
+    description: "Les heures de service et du brunch.",
+    icon: Clock3,
   },
   {
     href: "/admin/promotions",
@@ -55,10 +52,16 @@ const TILES = [
     icon: Tag,
   },
   {
-    href: "/admin/horaires",
-    label: "Horaires",
-    description: "Définir les heures de service et de brunch.",
-    icon: Clock3,
+    href: "/admin/tables",
+    label: "Tables & QR codes",
+    description: "Gérer les tables et réimprimer les QR codes.",
+    icon: QrCode,
+  },
+  {
+    href: "/admin/photos",
+    label: "Envoi groupé de photos",
+    description: "Pour envoyer beaucoup de photos d'un coup. Pour un seul plat, passez par La carte.",
+    icon: ImagePlus,
   },
   {
     href: "/admin/personnel",
@@ -73,10 +76,17 @@ const TILES = [
     icon: BarChart3,
   },
   {
-    href: "/admin/photos",
-    label: "Photos des plats",
-    description: "Uploader toutes les photos en une seule fois.",
-    icon: ImagePlus,
+    href: "/cuisine",
+    label: "Commandes en direct",
+    description: ONLINE_ORDERING_ENABLED
+      ? "Les commandes des clients qui arrivent, en temps réel."
+      : "En pause : les clients commandent auprès d'un serveur, pas depuis leur téléphone.",
+    icon: BellRing,
+    // Pas de compteur quand la fonction est en pause : il afficherait les
+    // commandes restées ouvertes à l'arrêt du service, ce qui ferait croire
+    // qu'il y a du travail en attente.
+    statKey: ONLINE_ORDERING_ENABLED ? ("activeOrders" as const) : undefined,
+    muted: !ONLINE_ORDERING_ENABLED,
   },
 ];
 
@@ -85,6 +95,8 @@ interface DashboardStats {
   ordersToday: number;
   activeOrders: number;
   pendingReservations: number;
+  itemsOnMenu: number;
+  itemsHidden: number;
 }
 
 const EMPTY_STATS: DashboardStats = {
@@ -92,6 +104,8 @@ const EMPTY_STATS: DashboardStats = {
   ordersToday: 0,
   activeOrders: 0,
   pendingReservations: 0,
+  itemsOnMenu: 0,
+  itemsHidden: 0,
 };
 
 export function AdminHomePage() {
@@ -110,7 +124,7 @@ export function AdminHomePage() {
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
 
-      const [ordersResult, activeResult, reservationsResult] = await Promise.all([
+      const [ordersResult, activeResult, reservationsResult, onMenuResult, hiddenResult] = await Promise.all([
         supabase!
           .from("orders")
           .select("total")
@@ -126,6 +140,16 @@ export function AdminHomePage() {
           .select("id", { count: "exact", head: true })
           .eq("restaurant_id", DEFAULT_RESTAURANT_ID)
           .eq("statut", "pending"),
+        supabase!
+          .from("items")
+          .select("id", { count: "exact", head: true })
+          .eq("restaurant_id", DEFAULT_RESTAURANT_ID)
+          .eq("disponible", true),
+        supabase!
+          .from("items")
+          .select("id", { count: "exact", head: true })
+          .eq("restaurant_id", DEFAULT_RESTAURANT_ID)
+          .eq("disponible", false),
       ]);
 
       if (cancelled) return;
@@ -136,6 +160,8 @@ export function AdminHomePage() {
         ordersToday: todayOrders.length,
         activeOrders: activeResult.count ?? 0,
         pendingReservations: reservationsResult.count ?? 0,
+        itemsOnMenu: onMenuResult.count ?? 0,
+        itemsHidden: hiddenResult.count ?? 0,
       });
     }
 
@@ -158,17 +184,36 @@ export function AdminHomePage() {
       title="Tableau de bord"
       subtitle="Tout votre restaurant au même endroit. Choisissez ce que vous voulez gérer."
     >
+      {/* Tant que la commande en ligne est en pause, afficher un chiffre
+          d'affaires figé à 0 laisserait croire à une panne : on montre à la
+          place l'état réel de la carte. */}
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <StatCard
-          label="Chiffre d'affaires aujourd'hui"
-          value={stats ? formatCurrency(stats.revenueToday, "fr") : "—"}
-          hint={stats ? `${stats.ordersToday} commande${stats.ordersToday > 1 ? "s" : ""}` : undefined}
-        />
-        <StatCard
-          label="Commandes en cours"
-          value={stats ? String(stats.activeOrders) : "—"}
-          hint="En attente ou en préparation"
-        />
+        {ONLINE_ORDERING_ENABLED ? (
+          <StatCard
+            label="Chiffre d'affaires aujourd'hui"
+            value={stats ? formatCurrency(stats.revenueToday, "fr") : "—"}
+            hint={stats ? `${stats.ordersToday} commande${stats.ordersToday > 1 ? "s" : ""}` : undefined}
+          />
+        ) : (
+          <StatCard
+            label="Plats sur la carte"
+            value={stats ? String(stats.itemsOnMenu) : "—"}
+            hint="Visibles par les clients"
+          />
+        )}
+        {ONLINE_ORDERING_ENABLED ? (
+          <StatCard
+            label="Commandes en cours"
+            value={stats ? String(stats.activeOrders) : "—"}
+            hint="En attente ou en préparation"
+          />
+        ) : (
+          <StatCard
+            label="Plats masqués"
+            value={stats ? String(stats.itemsHidden) : "—"}
+            hint="Retirés de la carte, récupérables"
+          />
+        )}
         <StatCard
           label="Réservations en attente"
           value={stats ? String(stats.pendingReservations) : "—"}
@@ -187,7 +232,9 @@ export function AdminHomePage() {
               className={`group relative flex flex-col rounded-2xl border p-5 transition-all hover:-translate-y-1 hover:shadow-lg ${
                 tile.accent
                   ? "border-[var(--color-dark-green)] bg-[var(--color-dark-green)] text-white"
-                  : "border-[var(--color-light-gray)] bg-white text-[var(--color-dark-green)]"
+                  : tile.muted
+                    ? "border-dashed border-[var(--color-light-gray)] bg-white text-[var(--color-dark-green)]/55"
+                    : "border-[var(--color-light-gray)] bg-white text-[var(--color-dark-green)]"
               }`}
             >
               {liveCount > 0 ? (
@@ -206,7 +253,16 @@ export function AdminHomePage() {
               >
                 <Icon className="h-6 w-6" />
               </span>
-              <span className="mt-4 text-lg font-bold">{tile.label}</span>
+              {/* La couleur est posée explicitement : héritée du lien, elle
+                  retombait sur le noir du body et devenait illisible sur la
+                  tuile sombre. */}
+              <span
+                className={`mt-4 text-lg font-bold ${
+                  tile.accent ? "text-white" : "text-[var(--color-dark-green)]"
+                }`}
+              >
+                {tile.label}
+              </span>
               <span
                 className={`mt-1 text-sm ${
                   tile.accent ? "text-white/85" : "text-[var(--color-black)]/65"
@@ -214,7 +270,11 @@ export function AdminHomePage() {
               >
                 {tile.description}
               </span>
-              <span className="mt-4 text-sm font-semibold">
+              <span
+                className={`mt-4 text-sm font-semibold ${
+                  tile.accent ? "text-white" : "text-[var(--color-dark-green)]"
+                }`}
+              >
                 Ouvrir →
               </span>
             </Link>

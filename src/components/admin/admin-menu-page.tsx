@@ -26,6 +26,19 @@ function normalizeAllergenToken(value: string) {
   return normalizeAllergen(value).replace(/\s+/g, " ").trim();
 }
 
+// Recherche tolérante : on ignore accents, casse et ponctuation, pour que
+// "boeuf" trouve "Bœuf" et "cafe" trouve "Café".
+function searchKey(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/œ/g, "oe")
+    .replace(/æ/g, "ae")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
 function parseAllergens(raw: string) {
   const parsed: string[] = [];
   const seen = new Set<string>();
@@ -58,6 +71,16 @@ export function AdminMenuPage() {
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editDrafts, setEditDrafts] = useState<Record<string, { nom: string; prix: string; description: string }>>({});
   const [photoUploading, setPhotoUploading] = useState<Record<string, boolean>>({});
+
+  // Recherche et filtres de la liste des plats : sans eux, retrouver un plat
+  // parmi plus de cent oblige à faire défiler toute la page.
+  const [search, setSearch] = useState("");
+  const [filterCategoryId, setFilterCategoryId] = useState("");
+  const [hiddenOnly, setHiddenOnly] = useState(false);
+  // Les formulaires de création sont repliés : la tâche quotidienne est de
+  // retrouver un plat existant, pas d'en créer un.
+  const [showCreate, setShowCreate] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const [categoryName, setCategoryName] = useState("");
   const [categoryOrder, setCategoryOrder] = useState("10");
@@ -149,6 +172,42 @@ export function AdminMenuPage() {
     () => items.filter((item) => categories.find((category) => category.id === item.categorie_id)?.slug === "pizzas"),
     [items, categories],
   );
+
+  const categoryById = useMemo(
+    () => Object.fromEntries(categories.map((category) => [category.id, category])),
+    [categories],
+  );
+
+  const visibleItems = useMemo(() => {
+    const needle = searchKey(search);
+    return items.filter((item) => {
+      if (filterCategoryId && item.categorie_id !== filterCategoryId) return false;
+      if (hiddenOnly && item.disponible) return false;
+      if (!needle) return true;
+      const haystack = searchKey(`${item.nom} ${item.description ?? ""}`);
+      return needle.split(" ").every((word) => haystack.includes(word));
+    });
+  }, [items, search, filterCategoryId, hiddenOnly]);
+
+  // Les plats sont présentés par catégorie, dans l'ordre de la carte, au lieu
+  // d'une seule liste alphabétique de plus de cent lignes.
+  const groupedItems = useMemo(() => {
+    const groups = [...categories]
+      .sort((a, b) => a.ordre - b.ordre)
+      .map((category) => ({
+        category,
+        items: visibleItems.filter((item) => item.categorie_id === category.id),
+      }))
+      .filter((group) => group.items.length > 0);
+
+    const orphans = visibleItems.filter((item) => !categoryById[item.categorie_id]);
+    if (orphans.length > 0) {
+      groups.push({ category: null as unknown as Category, items: orphans });
+    }
+    return groups;
+  }, [categories, visibleItems, categoryById]);
+
+  const hiddenCount = useMemo(() => items.filter((item) => !item.disponible).length, [items]);
 
   async function createCategory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -324,9 +383,24 @@ export function AdminMenuPage() {
     }
   }
 
+  // Suppression définitive : les commandes déjà passées référencent le plat,
+  // donc l'effacer abîme l'historique et les rapports de ventes. Masquer est
+  // presque toujours ce qu'on veut, d'où la confirmation explicite.
   async function deleteItem(itemId: string) {
     const supabase = getBrowserSupabase();
     if (!supabase) {
+      return;
+    }
+
+    const item = items.find((entry) => entry.id === itemId);
+    const confirmed = window.confirm(
+      `Supprimer définitivement « ${item?.nom ?? "ce plat"} » ?\n\n` +
+        "Cette action est irréversible et efface le plat de l'historique des commandes " +
+        "déjà passées.\n\n" +
+        "Pour le retirer simplement de la carte, annulez et utilisez « Masquer » : " +
+        "le plat disparaît du site et reste récupérable.",
+    );
+    if (!confirmed) {
       return;
     }
 
@@ -492,16 +566,85 @@ export function AdminMenuPage() {
   }
 
   return (
-    <PageShell title={messages.admin.menuManagement} subtitle="CRUD complet des catégories, plats, tailles pizza et accompagnements.">
+    <PageShell
+      title="Gestion de la carte"
+      subtitle="Cherchez un plat pour changer son prix, sa photo, ou le retirer de la carte."
+    >
       {error ? <Card className="mb-4 border-[#9C3D3D] text-[#8b2424]">{error}</Card> : null}
 
       {loading ? (
-        <Card>{messages.common.loading}</Card>
+        <Card>Chargement…</Card>
       ) : (
         <div className="space-y-6">
+          <Card>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <div className="flex-1">
+                <FieldLabel>Chercher un plat</FieldLabel>
+                <TextInput
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Ex. poulet, pizza, jus…"
+                />
+              </div>
+              <div className="sm:w-56">
+                <FieldLabel>Catégorie</FieldLabel>
+                <Select
+                  value={filterCategoryId}
+                  onChange={(event) => setFilterCategoryId(event.target.value)}
+                >
+                  <option value="">Toutes</option>
+                  {[...categories]
+                    .sort((a, b) => a.ordre - b.ordre)
+                    .map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.nom}
+                      </option>
+                    ))}
+                </Select>
+              </div>
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <label className="inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-[var(--color-dark-green)]">
+                <input
+                  type="checkbox"
+                  checked={hiddenOnly}
+                  onChange={(event) => setHiddenOnly(event.target.checked)}
+                />
+                Voir seulement les plats masqués ({hiddenCount})
+              </label>
+              {search || filterCategoryId || hiddenOnly ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setSearch("");
+                    setFilterCategoryId("");
+                    setHiddenOnly(false);
+                  }}
+                >
+                  Tout afficher
+                </Button>
+              ) : null}
+              <span className="ml-auto text-sm text-[var(--color-black)]/65">
+                {visibleItems.length} plat{visibleItems.length > 1 ? "s" : ""} sur {items.length}
+              </span>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-2 border-t border-[var(--color-light-gray)] pt-4">
+              <Button type="button" onClick={() => setShowCreate((current) => !current)}>
+                {showCreate ? "Fermer" : "+ Ajouter un plat"}
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => setShowAdvanced((current) => !current)}>
+                {showAdvanced ? "Masquer les réglages avancés" : "Réglages avancés"}
+              </Button>
+            </div>
+          </Card>
+
+          {showCreate ? (
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
-              <CardTitle className="font-heading text-3xl">{messages.admin.addCategory}</CardTitle>
+              <CardTitle className="font-heading text-3xl">Ajouter une catégorie</CardTitle>
               <form className="mt-4 space-y-3" onSubmit={createCategory}>
                 <div>
                   <FieldLabel>Nom catégorie</FieldLabel>
@@ -516,7 +659,7 @@ export function AdminMenuPage() {
                     min={1}
                   />
                 </div>
-                <Button type="submit">{messages.common.save}</Button>
+                <Button type="submit">Enregistrer</Button>
               </form>
 
               <hr className="my-5 border-[var(--color-light-gray)]" />
@@ -546,12 +689,12 @@ export function AdminMenuPage() {
                     required
                   />
                 </div>
-                <Button type="submit">{messages.common.save}</Button>
+                <Button type="submit">Enregistrer</Button>
               </form>
             </Card>
 
             <Card>
-              <CardTitle className="font-heading text-3xl">{messages.admin.addItem}</CardTitle>
+              <CardTitle className="font-heading text-3xl">Ajouter un plat</CardTitle>
               <form className="mt-4 space-y-3" onSubmit={createItem}>
                 <div>
                   <FieldLabel>Nom plat</FieldLabel>
@@ -613,17 +756,30 @@ export function AdminMenuPage() {
                     checked={itemNeedsAccompaniment}
                     onChange={(event) => setItemNeedsAccompaniment(event.target.checked)}
                   />
-                  Accompagnement obligatoire
+                  Servi avec un accompagnement au choix
                 </label>
-                <Button type="submit">{messages.common.save}</Button>
+                <Button type="submit">Enregistrer</Button>
               </form>
             </Card>
           </div>
+          ) : null}
 
-          <Card>
-            <CardTitle className="font-heading text-3xl">Plats</CardTitle>
+          {visibleItems.length === 0 ? (
+            <Card className="text-center text-[var(--color-black)]/70">
+              Aucun plat ne correspond à cette recherche.
+            </Card>
+          ) : null}
+
+          {groupedItems.map((group) => (
+          <Card key={group.category?.id ?? "sans-categorie"}>
+            <CardTitle className="font-heading text-3xl">
+              {group.category?.nom ?? "Sans catégorie"}{" "}
+              <span className="text-base font-normal text-[var(--color-black)]/55">
+                · {group.items.length} plat{group.items.length > 1 ? "s" : ""}
+              </span>
+            </CardTitle>
             <ul className="mt-4 space-y-3">
-              {items.map((item) => (
+              {group.items.map((item) => (
                 <li key={item.id} className="rounded-xl border border-[var(--color-light-gray)] p-3">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
@@ -717,21 +873,34 @@ export function AdminMenuPage() {
                               }
                             />
                           </div>
-                          <div className="flex gap-2">
-                            <Button type="submit">{messages.common.save}</Button>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Button type="submit">Enregistrer</Button>
                             <Button type="button" variant="ghost" onClick={() => setEditingItemId(null)}>
-                              {messages.common.cancel}
+                              Annuler
+                            </Button>
+                            {/* La suppression définitive vit ici, à l'écart des gestes
+                                quotidiens : sur chaque ligne, elle se cliquait par erreur. */}
+                            <Button
+                              type="button"
+                              variant="danger"
+                              className="ml-auto"
+                              onClick={() => void deleteItem(item.id)}
+                            >
+                              Supprimer définitivement
                             </Button>
                           </div>
                         </form>
                       ) : null}
                       <div className="mt-1 flex flex-wrap gap-2">
                         <Badge className={item.disponible ? "bg-[#e5f6e5] text-[#225222]" : "bg-[#ffe4e4] text-[#8b2424]"}>
-                          {item.disponible ? "Disponible" : "Épuisé"}
+                          {item.disponible ? "Sur la carte" : "Masqué du site"}
                         </Badge>
-                        {item.plat_du_jour ? <Badge>{messages.admin.dishOfDay}</Badge> : null}
+                        {item.plat_du_jour ? <Badge>Plat du jour</Badge> : null}
                       </div>
 
+                      {/* Les allergènes n'apparaissent qu'en mode édition : affichés
+                          en permanence, ils triplaient la hauteur de chaque ligne. */}
+                      {editingItemId === item.id ? (
                       <div className="mt-3">
                         <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-dark-green)]/80">
                           Allergènes
@@ -789,6 +958,7 @@ export function AdminMenuPage() {
                           Sépare par virgule pour ajouter ou modifier. Clique un allergène pour le supprimer.
                         </p>
                       </div>
+                      ) : null}
                     </div>
 
                     <div className="flex flex-wrap gap-2">
@@ -797,17 +967,14 @@ export function AdminMenuPage() {
                         variant="secondary"
                         onClick={() => void updateItem(item.id, { disponible: !item.disponible })}
                       >
-                        {item.disponible ? messages.admin.disable : messages.admin.enable}
+                        {item.disponible ? "Masquer" : "Remettre sur la carte"}
                       </Button>
                       <Button
                         type="button"
                         variant="secondary"
                         onClick={() => void updateItem(item.id, { plat_du_jour: !item.plat_du_jour })}
                       >
-                        {messages.admin.dishOfDay}
-                      </Button>
-                      <Button type="button" variant="danger" onClick={() => void deleteItem(item.id)}>
-                        {messages.common.delete}
+                        Plat du jour
                       </Button>
                     </div>
                   </div>
@@ -815,7 +982,9 @@ export function AdminMenuPage() {
               ))}
             </ul>
           </Card>
+          ))}
 
+          {showAdvanced ? (
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardTitle className="font-heading text-3xl">Tailles Pizza</CardTitle>
@@ -845,7 +1014,7 @@ export function AdminMenuPage() {
                     required
                   />
                 </div>
-                <Button type="submit">{messages.common.save}</Button>
+                <Button type="submit">Enregistrer</Button>
               </form>
 
               <ul className="mt-4 space-y-2 text-sm">
@@ -855,7 +1024,7 @@ export function AdminMenuPage() {
                       {items.find((item) => item.id === size.item_id)?.nom} · {size.taille} · {formatCurrency(size.prix, locale)}
                     </span>
                     <Button type="button" variant="danger" onClick={() => void deletePizzaSize(size.id)}>
-                      {messages.common.delete}
+                      Supprimer
                     </Button>
                   </li>
                 ))}
@@ -879,7 +1048,7 @@ export function AdminMenuPage() {
                     required
                   />
                 </div>
-                <Button type="submit">{messages.common.save}</Button>
+                <Button type="submit">Enregistrer</Button>
               </form>
 
               <ul className="mt-4 space-y-2 text-sm">
@@ -900,10 +1069,10 @@ export function AdminMenuPage() {
                             })
                           }
                         >
-                          {messages.common.edit}
+                          Modifier
                         </Button>
                         <Button type="button" variant="danger" onClick={() => void deleteAccompaniment(acc.id)}>
-                          {messages.common.delete}
+                          Supprimer
                         </Button>
                       </div>
                     </div>
@@ -912,6 +1081,7 @@ export function AdminMenuPage() {
               </ul>
             </Card>
           </div>
+          ) : null}
         </div>
       )}
     </PageShell>
